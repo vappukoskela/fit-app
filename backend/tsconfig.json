@@ -1,0 +1,33 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+
+  "compilerOptions": {
+    /* Basic Options */
+    "target": "ES2020", // Or a later version if your Node.js version supports it
+    "module": "NodeNext", // Aligns with modern Node.js module systems
+    "moduleResolution": "NodeNext", // Crucial for resolving Node.js modules
+    "rootDir": "./src", // Specifies the root directory of your source files
+    "outDir": "./dist", // Specifies the output directory for compiled JavaScript files
+
+    /* Strict Type-Checking Options */
+    "strict": true, // Enable all strict type-checking options
+    "noImplicitAny": true, // Raise error on expressions and declarations with an implied 'any' type
+
+    /* Module Resolution Options */
+    "esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules
+    "skipLibCheck": true, // Skip type checking of declaration files
+
+    /* Source Map Options */
+    "sourceMap": true, // Generates source maps for debugging
+
+    /* Experimental Options */
+    "experimentalDecorators": true, // Enable experimental support for decorators
+
+    /* Advanced Options */
+    "skipDefaultLibCheck": true // Skip type checking of default libraries
+  },
+  "include": ["src/**/*"], // Tells TypeScript to include all files in the src directory
+  "exclude": ["node_modules"] // Tells TypeScript to exclude the node_modules directory
+
+  
+}
