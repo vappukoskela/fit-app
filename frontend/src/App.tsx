@@ -1,10 +1,22 @@
-import { Dashboard } from "./components/Dashboard";
-import { ThemeProvider } from "./theme/ThemeProvider"
+import { ThemeProvider } from './theme/ThemeProvider';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import UserPage from './Pages/UserPage';
+import WeightPage from './Pages/WeightPage';
+import Dashboard from './Pages/Dashboard';
+import { Layout } from './Layout';
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <Dashboard />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="user" element={<UserPage />} />
+            <Route path="weight" element={<WeightPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   )
 }
