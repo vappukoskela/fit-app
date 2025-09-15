@@ -205,7 +205,7 @@ export function NutritionPage() {
                 <main className="p-6">
                     <div className="flex flex-col justify-center items-center min-h-96 gap-4">
                         <Spinner variant="ring" />
-                        <div>Loading user...</div>
+                        <div>Loading food diary...</div>
                     </div>
                 </main>
             </div>
@@ -251,7 +251,6 @@ export function NutritionPage() {
 
                             return (
                                 <div key={date} className="space-y-3">
-                                    {/* Date Header with Totals */}
                                     <Card className="bg-muted/50">
                                         <CardContent className="p-4">
                                             <div className="flex justify-between items-center">
@@ -279,7 +278,6 @@ export function NutritionPage() {
                                         </CardContent>
                                     </Card>
 
-                                    {/* Add Entry Form */}
                                     {showAddForm === date && (
                                         <Card className="border-dashed">
                                             <CardContent className="p-4">
