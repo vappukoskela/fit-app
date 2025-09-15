@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import openaiRoutes from './routes/openai';
+import aiRoutes from './routes/ai';
 import diaryRoutes from './routes/fooddiary';
 import weightRoutes from './routes/weights';
 
@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/openai', openaiRoutes);
+app.use('/api/chat', aiRoutes);
 app.use('/api/diary', diaryRoutes)
 app.use('/api/weights', weightRoutes)
 
