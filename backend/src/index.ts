@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import openaiRoutes from './routes/openai';
-import diaryRoutes from './routes/diary';
+import diaryRoutes from './routes/fooddiary';
 import weightRoutes from './routes/weights';
 
 const app = express();
