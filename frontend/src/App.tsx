@@ -4,6 +4,7 @@ import UserPage from './Pages/UserPage';
 import WeightPage from './Pages/WeightPage';
 import Dashboard from './Pages/Dashboard';
 import { Layout } from './Layout';
+import { NutritionPage } from './Pages/NutritionPage';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="user" element={<UserPage />} />
             <Route path="weight" element={<WeightPage />} />
+            <Route path="nutrition" element={<NutritionPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
