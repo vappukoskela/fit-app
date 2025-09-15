@@ -56,13 +56,13 @@ export function UserPage() {
                 <main className="p-6">
                     <div className="flex flex-col justify-center items-center min-h-96 gap-4">
                         <Spinner variant="ring" />
-                        <div>Loading food diary...</div>
+                        <div>Loading profile...</div>
                     </div>
                 </main>
             </div>
         )
     }
-    
+
     return (
         <main>
 
