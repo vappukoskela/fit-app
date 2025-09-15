@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Spinner } from '@/components/ui/shadcn-io/spinner'
 
 interface WeightEntry {
   log_date: string
@@ -56,26 +57,23 @@ export function WeightPage() {
     return change
   }
 
+
   if (loading) {
     return (
-      <div className=" bg-background text-foreground">
-        <header className="flex justify-between items-center p-4 border-b bg-card">
-          <h1 className="text-xl font-bold">Weight History</h1>
-        </header>
+      <div className="bg-background text-foreground">
         <main className="p-6">
-          <div className="flex justify-center items-center min-h-96">
-            <div className="text-muted-foreground">Loading weights...</div>
+          <div className="flex flex-col justify-center items-center min-h-96 gap-4">
+            <Spinner variant="ring" />
+            <div>Loading weights...</div>
           </div>
         </main>
       </div>
     )
   }
+
   else if (error) {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <header className="flex justify-between items-center p-4 border-b bg-card">
-          <h1 className="text-xl font-bold">Weight History</h1>
-        </header>
         <main className="p-6">
           <Card>
             <CardContent className="p-6">
@@ -117,10 +115,10 @@ export function WeightPage() {
                           </span>
                           {weightChange !== null && (
                             <span className={`text-sm font-medium ${weightChange > 0
-                                ? 'text-red-600'
-                                : weightChange < 0
-                                  ? 'text-green-600'
-                                  : 'text-muted-foreground'
+                              ? 'text-red-600'
+                              : weightChange < 0
+                                ? 'text-green-600'
+                                : 'text-muted-foreground'
                               }`}>
                               {weightChange > 0 ? '+' : ''}{weightChange.toFixed(1)} kg
                             </span>
