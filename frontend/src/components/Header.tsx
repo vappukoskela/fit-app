@@ -127,8 +127,9 @@ export interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
 // Default navigation links
 const defaultNavigationLinks: HeaderNavItem[] = [
     { href: '/', label: 'Home' },
-    { href: '/activity', label: 'Activity' },
     { href: '/nutrition', label: 'Nutrition' },
+    { href: '/recipes', label: 'Recipes' }, 
+    { href: '/activity', label: 'Activity' },
     { href: '/weight', label: 'Weight' },
 ];
 

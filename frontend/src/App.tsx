@@ -6,6 +6,7 @@ import Dashboard from './Pages/Dashboard';
 import { Layout } from './Layout';
 import { NutritionPage } from './Pages/NutritionPage';
 import ActivityPage from './Pages/ActivityPage';
+import RecipePage from './Pages/RecipePage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="weight" element={<WeightPage />} />
             <Route path="nutrition" element={<NutritionPage />} />
             <Route path="activity" element={<ActivityPage />} />
+            <Route path="recipes" element={<RecipePage />} />
           </Route>
         </Routes>
       </BrowserRouter>
