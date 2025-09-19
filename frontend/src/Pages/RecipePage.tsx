@@ -38,6 +38,25 @@ interface RecipeIngredient {
     ingredient?: Ingredient
 }
 
+interface RawRecipeIngredient {
+    id: number
+    recipe_id: number
+    ingredient_id: number
+    amount_g: string
+    note: string | null
+    name: string
+    kcal_per_100g: string
+    protein_per_100g: string
+    carbs_per_100g: string
+    fat_per_100g: string
+    serving_size_g: string | null
+    serving_description: string | null
+    kcal_per_serving: string | null
+    protein_per_serving: string | null
+    carbs_per_serving: string | null
+    fat_per_serving: string | null
+}
+
 interface IngredientForm {
     name: string
     kcal_per_100g: string
@@ -62,8 +81,8 @@ export function RecipePage() {
 
     // Search and sorting
     const [searchTerm, setSearchTerm] = useState('')
-    const [sortBy, setSortBy] = useState<'alphabetical' | 'recent'>('alphabetical')
-
+    const [sortBy, setSortBy] = useState<'alphabetical' | 'recent'>('recent')
+    const [modalIngredientSearch, setModalIngredientSearch] = useState("")
     // Forms
     const [showIngredientForm, setShowIngredientForm] = useState(false)
     const [showRecipeForm, setShowRecipeForm] = useState(false)
@@ -88,13 +107,47 @@ export function RecipePage() {
 
     // Recipe building
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
-    const [recipeIngredients, setRecipeIngredients] = useState<{ ingredient: Ingredient, amount: string, note: string }[]>([])
+    const [recipeIngredients, setRecipeIngredients] = useState<{ ingredient: Ingredient, amount_g: string, note: string }[]>([])
+    const [showRecipeBuilder, setShowRecipeBuilder] = useState(false)
 
     useEffect(() => {
-        fetchRecipesAndIngredients()
+        fetchData()
     }, [])
 
-    const fetchRecipesAndIngredients = async () => {
+    const fetchRecipeIngredients = async (recipeId: number) => {
+        try {
+            const response = await fetch(`http://localhost:4000/api/recipes/${recipeId}/ingredients`)
+            if (response.ok) {
+                const data = await response.json()
+                console.log(data)
+                const formatted = data.map((ri: RawRecipeIngredient) => ({
+                    id: ri.id,
+                    recipe_id: ri.recipe_id,
+                    ingredient_id: ri.ingredient_id,
+                    amount_g: parseFloat(ri.amount_g),
+                    note: ri.note,
+                    ingredient: {
+                        id: ri.ingredient_id,
+                        name: ri.name,
+                        kcal_per_100g: ri.kcal_per_100g,
+                        protein_per_100g: ri.protein_per_100g,
+                        carbs_per_100g: ri.carbs_per_100g,
+                        fat_per_100g: ri.fat_per_100g,
+                        serving_size_g: ri.serving_size_g,
+                        serving_description: ri.serving_description,
+                        kcal_per_serving: ri.kcal_per_serving,
+                        protein_per_serving: ri.protein_per_serving,
+                        carbs_per_serving: ri.carbs_per_serving,
+                        fat_per_serving: ri.fat_per_serving,
+                    }
+                }))
+                setRecipeIngredients(formatted)
+            }
+        } catch (err) {
+            console.error('Failed to fetch recipe ingredients:', err)
+        }
+    }
+    const fetchData = async () => {
         try {
             setLoading(true)
             const [ingredientsRes, recipesRes] = await Promise.all([
@@ -146,7 +199,6 @@ export function RecipePage() {
                 fat_per_serving: servingSize ? calculateServingValues(fatPer100, servingSize) : null
             }
 
-            console.log('Submitting ingredient:', payload)
             const url = editingIngredient
                 ? `http://localhost:4000/api/ingredients/${editingIngredient}`
                 : 'http://localhost:4000/api/ingredients'
@@ -159,7 +211,7 @@ export function RecipePage() {
 
             if (!response.ok) throw new Error('Failed to save ingredient')
 
-            await fetchRecipesAndIngredients()
+            await fetchData()
             resetIngredientForm()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to save ingredient')
@@ -186,7 +238,7 @@ export function RecipePage() {
 
             if (!response.ok) throw new Error('Failed to save recipe')
 
-            await fetchRecipesAndIngredients()
+            await fetchData()
             resetRecipeForm()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to save recipe')
@@ -201,7 +253,7 @@ export function RecipePage() {
                 method: 'DELETE'
             })
             if (!response.ok) throw new Error('Failed to delete ingredient')
-            await fetchRecipesAndIngredients()
+            await fetchData()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to delete ingredient')
         }
@@ -215,7 +267,7 @@ export function RecipePage() {
                 method: 'DELETE'
             })
             if (!response.ok) throw new Error('Failed to delete recipe')
-            await fetchRecipesAndIngredients()
+            await fetchData()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to delete recipe')
         }
@@ -274,9 +326,80 @@ export function RecipePage() {
 
         setRecipeIngredients(prev => [...prev, {
             ingredient,
-            amount: '100',
+            amount_g: '100',
             note: ''
         }])
+    }
+
+    const updateRecipeIngredient = (index: number, field: 'amount_g' | 'note', value: string) => {
+        setRecipeIngredients(prev => prev.map((ri, i) =>
+            i === index ? { ...ri, [field]: value } : ri
+        ))
+    }
+
+    const removeRecipeIngredient = (index: number) => {
+        setRecipeIngredients(prev => prev.filter((_, i) => i !== index))
+    }
+
+    const saveRecipeIngredients = async () => {
+        if (!selectedRecipe) return
+
+        try {
+            // Delete existing ingredients for this recipe
+            await fetch(`http://localhost:4000/api/recipes/${selectedRecipe.id}/ingredients`, {
+                method: 'DELETE'
+            })
+
+            // Add new ingredients
+            for (const ri of recipeIngredients) {
+                await fetch(`http://localhost:4000/api/recipes/${selectedRecipe.id}/ingredients`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ingredient_id: ri.ingredient.id,
+                        amount_g: parseFloat(ri.amount_g),
+                        note: ri.note || null
+                    })
+                })
+            }
+
+            setShowRecipeBuilder(false)
+            setSelectedRecipe(null)
+            setRecipeIngredients([])
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to save recipe')
+        }
+    }
+
+    const openRecipeBuilder = async (recipe: Recipe) => {
+        setSelectedRecipe(recipe)
+        setShowRecipeBuilder(true)
+        await fetchRecipeIngredients(recipe.id)
+    }
+
+    const calculateRecipeNutrition = () => {
+        if (!selectedRecipe || recipeIngredients.length === 0) return null
+
+        const totals = recipeIngredients.reduce((acc, ri) => {
+            const amount = parseFloat(ri.amount_g) || 0
+            const factor = amount / 100 
+
+            return {
+                kcal: acc.kcal + (ri.ingredient.kcal_per_100g * factor),
+                protein: acc.protein + (ri.ingredient.protein_per_100g * factor),
+                carbs: acc.carbs + (ri.ingredient.carbs_per_100g * factor),
+                fat: acc.fat + (ri.ingredient.fat_per_100g * factor)
+            }
+        }, { kcal: 0, protein: 0, carbs: 0, fat: 0 })
+
+        const perServing = {
+            kcal: totals.kcal / selectedRecipe.servings,
+            protein: totals.protein / selectedRecipe.servings,
+            carbs: totals.carbs / selectedRecipe.servings,
+            fat: totals.fat / selectedRecipe.servings
+        }
+
+        return { totals, perServing }
     }
 
     const filteredIngredients = ingredients.filter(ingredient =>
@@ -285,7 +408,7 @@ export function RecipePage() {
         if (sortBy === 'alphabetical') {
             return a.name.localeCompare(b.name)
         }
-        return b.id - a.id // recent first
+        return b.id - a.id 
     })
 
     const filteredRecipes = recipes.filter(recipe =>
@@ -294,7 +417,7 @@ export function RecipePage() {
         if (sortBy === 'alphabetical') {
             return a.name.localeCompare(b.name)
         }
-        return b.id - a.id // recent first
+        return b.id - a.id
     })
 
     if (loading) {
@@ -411,6 +534,14 @@ export function RecipePage() {
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
+                                                            onClick={() => openRecipeBuilder(recipe)}
+                                                            className="text-blue-600 hover:text-blue-600"
+                                                        >
+                                                            <ChefHat className="h-3 w-3" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
                                                             onClick={() => editRecipe(recipe)}
                                                         >
                                                             <Edit2 className="h-3 w-3" />
@@ -433,7 +564,6 @@ export function RecipePage() {
                         </Card>
                     </div>
 
-                    {/* Ingredients Column */}
                     <div className="space-y-4">
                         <Card>
                             <CardHeader>
@@ -566,9 +696,170 @@ export function RecipePage() {
                         </Card>
                     </div>
                 </div>
+
+                {showRecipeBuilder && selectedRecipe && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                            <div className="p-6 border-b">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xl font-bold">Build Recipe: {selectedRecipe.name}</h2>
+                                    <Button variant="ghost" onClick={() => setShowRecipeBuilder(false)}>
+                                        <X className="h-5 w-5" />
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="p-6 overflow-y-auto max-h-[70vh]">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-4">Recipe Ingredients</h3>
+                                        {recipeIngredients.length === 0 ? (
+                                            <p className="text-muted-foreground text-center py-8">
+                                                No ingredients added yet. Double-click ingredients from the right to add them.
+                                            </p>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {recipeIngredients.map((ri, index) => {
+                                                    const amount = parseFloat(ri.amount_g) || 0
+                                                    const factor = amount / 100
+                                                    const kcal = ri.ingredient.kcal_per_100g * factor
+                                                    console.log(ri)
+                                                    return (
+                                                        <Card key={`${ri.ingredient.id}-${index}`}>
+                                                            <CardContent className="p-3">
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <h4 className="font-medium">{ri.ingredient.name}</h4>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() => removeRecipeIngredient(index)}
+                                                                        className="text-destructive hover:text-destructive"
+                                                                    >
+                                                                        <Trash2 className="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
+                                                                <div className="grid grid-cols-2 gap-2 mb-2">
+                                                                    <Input
+                                                                        type="number"
+                                                                        placeholder="Amount (g)"
+                                                                        value={ri.amount_g}
+                                                                        onChange={(e) => updateRecipeIngredient(index, 'amount_g', e.target.value)}
+                                                                    />
+                                                                    <Input
+                                                                        placeholder="Note (optional)"
+                                                                        value={ri.note}
+                                                                        onChange={(e) => updateRecipeIngredient(index, 'note', e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    {amount}g = {kcal.toFixed(0)} kcal,
+                                                                    P: {(ri.ingredient.protein_per_100g * factor).toFixed(1)}g,
+                                                                    C: {(ri.ingredient.carbs_per_100g * factor).toFixed(1)}g,
+                                                                    F: {(ri.ingredient.fat_per_100g * factor).toFixed(1)}g
+                                                                </div>
+                                                            </CardContent>
+                                                        </Card>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {recipeIngredients.length > 0 && (() => {
+                                            const nutrition = calculateRecipeNutrition()
+                                            if (!nutrition) return null
+
+                                            return (
+                                                <Card className="mt-4 bg-muted/50">
+                                                    <CardContent className="p-4">
+                                                        <h4 className="font-semibold mb-2">Recipe Nutrition</h4>
+                                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                                            <div>
+                                                                <div className="font-medium">Total Recipe:</div>
+                                                                <div>{nutrition.totals.kcal.toFixed(0)} kcal</div>
+                                                                <div>P: {nutrition.totals.protein.toFixed(1)}g</div>
+                                                                <div>C: {nutrition.totals.carbs.toFixed(1)}g</div>
+                                                                <div>F: {nutrition.totals.fat.toFixed(1)}g</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-medium">Per Serving ({selectedRecipe.servings} servings):</div>
+                                                                <div>{nutrition.perServing.kcal.toFixed(0)} kcal</div>
+                                                                <div>P: {nutrition.perServing.protein.toFixed(1)}g</div>
+                                                                <div>C: {nutrition.perServing.carbs.toFixed(1)}g</div>
+                                                                <div>F: {nutrition.perServing.fat.toFixed(1)}g</div>
+                                                            </div>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            )
+                                        })()}
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-4">Available Ingredients</h3>
+
+                                        <div className="relative mb-3">
+                                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder="Search ingredients in this list..."
+                                                value={modalIngredientSearch}
+                                                onChange={(e) => setModalIngredientSearch(e.target.value)}
+                                                className="pl-10"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                                            {ingredients
+                                                .filter(ingredient =>
+                                                    modalIngredientSearch.trim() === ""
+                                                        ? true
+                                                        : ingredient.name.toLowerCase().includes(modalIngredientSearch.toLowerCase())
+                                                )
+                                                .map(ingredient => (
+                                                    <Card
+                                                        key={ingredient.id}
+                                                        className="hover:shadow-md transition-shadow cursor-pointer hover:bg-muted/50"
+                                                        onDoubleClick={() => addIngredientToRecipe(ingredient)}
+                                                    >
+                                                        <CardContent className="p-2">
+                                                            <div className="text-sm">
+                                                                <div className="font-medium">{ingredient.name}</div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    Per 100g: {ingredient.kcal_per_100g}kcal,
+                                                                    P:{ingredient.protein_per_100g}g,
+                                                                    C:{ingredient.carbs_per_100g}g,
+                                                                    F:{ingredient.fat_per_100g}g
+                                                                </div>
+                                                                {recipeIngredients.some(ri => ri.ingredient.id === ingredient.id) && (
+                                                                    <div className="text-xs text-green-600 font-medium">✓ Added to recipe</div>
+                                                                )}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                        </div>
+
+                                        <div className="mt-4 p-3 bg-muted rounded text-sm text-muted-foreground">
+                                            💡 Double-click any ingredient to add it to your recipe
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6 border-t flex justify-end gap-3">
+                                <Button variant="outline" onClick={() => setShowRecipeBuilder(false)}>
+                                    Cancel
+                                </Button>
+                                <Button onClick={saveRecipeIngredients}>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Save Recipe
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )
 }
 
-export default RecipePage;
+export default RecipePage
