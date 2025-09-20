@@ -471,7 +471,6 @@ export function RecipePage() {
         }
     }
     const toggleIngredientfavourite = async (ingredientId: number) => {
-        console.log('Toggling favourite for ingredient ID:', ingredientId)
         try {
             if (ingredientfavourites.includes(ingredientId)) {
                 const res = await fetch(`http://localhost:4000/api/ingredients/${ingredientId}/favorite`, {
@@ -737,7 +736,7 @@ export function RecipePage() {
 
                                 <div className="space-y-2 max-h-96 overflow-y-auto">
                                     {filteredIngredients.map(ingredient => (
-                                        <Card key={ingredient.id} className="hover:shadow-md transition-shadow cursor-pointer"
+                                        <Card key={ingredient.id} className="hover:shadow-md transition-shadow"
                                             onDoubleClick={() => addIngredientToRecipe(ingredient)}>
                                             <CardContent className="p-3">
                                                 <div className="flex justify-between items-start">
@@ -817,7 +816,6 @@ export function RecipePage() {
                                                     const amount = parseFloat(ri.amount_g) || 0
                                                     const factor = amount / 100
                                                     const kcal = ri.ingredient.kcal_per_100g * factor
-                                                    console.log(ri)
                                                     return (
                                                         <Card key={`${ri.ingredient.id}-${index}`}>
                                                             <CardContent className="p-3">
@@ -911,7 +909,7 @@ export function RecipePage() {
                                                 .map(ingredient => (
                                                     <Card
                                                         key={ingredient.id}
-                                                        className="hover:shadow-md transition-shadow cursor-pointer hover:bg-muted/50"
+                                                        className="hover:shadow-md transition-shadow hover:bg-muted/50"
                                                         onDoubleClick={() => addIngredientToRecipe(ingredient)}
                                                     >
                                                         <CardContent className="p-2">
