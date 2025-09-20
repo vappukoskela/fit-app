@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
 
 const dummyNutrition = { intake: 2500, burned: 2000, protein: 120, carbs: 300, fat: 60 };
 const proteinPercent = 25;

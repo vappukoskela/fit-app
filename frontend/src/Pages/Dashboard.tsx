@@ -1,8 +1,8 @@
-import { AIAssistantCard } from "@/components/Cards/AIAssistantCard"
-import { FoodDiaryCard } from "@/components/Cards/FoodDiaryCard"
-import { NutritionCard } from "@/components/Cards/NutritionCard"
-import { WeightCard } from "@/components/Cards/WeightCard"
-import { WorkoutCard } from "@/components/Cards/WorkoutCard"
+import { AIAssistantCard } from "@/components/Cards/Dashboard/AIAssistantCard"
+import { FoodDiaryCard } from "@/components/Cards/Dashboard/FoodDiaryCard"
+import { NutritionCard } from "@/components/Cards/Dashboard/NutritionCard"
+import { WeightCard } from "@/components/Cards/Dashboard/WeightCard"
+import { WorkoutCard } from "@/components/Cards/Dashboard/WorkoutCard"
 import { Spinner } from "@/components/ui/shadcn-io/spinner"
 import { useState, useEffect } from "react"
 

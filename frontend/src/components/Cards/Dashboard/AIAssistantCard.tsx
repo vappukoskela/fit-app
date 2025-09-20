@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea";
-import { Badge } from "../ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
+import { Button } from "../../ui/button";
+import { Textarea } from "../../ui/textarea";
+import { Badge } from "../../ui/badge";
 import { Loader2, Send, Check, X, Edit2 } from "lucide-react";
-import { Input } from "../ui/input";
+import { Input } from "../../ui/input";
 
 // Types for the parsed food data
 interface FoodItem {

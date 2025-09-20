@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
 
 interface WeightEntry {
   log_date: string
