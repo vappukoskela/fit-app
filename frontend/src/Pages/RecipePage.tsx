@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Edit2, Save, X, Trash2, Search, ChefHat, Apple } from 'lucide-react'
+import { Plus, Edit2, Save, X, Trash2, Search, ChefHat, Apple, Star } from 'lucide-react'
 
 interface Ingredient {
     id: number
@@ -19,6 +18,8 @@ interface Ingredient {
     protein_per_serving: number | null
     carbs_per_serving: number | null
     fat_per_serving: number | null
+    favourite?: boolean
+    last_used_at?: string | null
 }
 
 interface Recipe {
@@ -27,6 +28,8 @@ interface Recipe {
     description: string | null
     servings: number
     ingredients?: RecipeIngredient[]
+    favourite?: boolean
+    last_used_at?: string | null
 }
 
 interface RecipeIngredient {
@@ -81,13 +84,15 @@ export function RecipePage() {
 
     // Search and sorting
     const [searchTerm, setSearchTerm] = useState('')
-    const [sortBy, setSortBy] = useState<'alphabetical' | 'recent'>('recent')
+    // const [sortBy, setSortBy] = useState<'alphabetical' | 'recent'>('recent')
     const [modalIngredientSearch, setModalIngredientSearch] = useState("")
     // Forms
     const [showIngredientForm, setShowIngredientForm] = useState(false)
     const [showRecipeForm, setShowRecipeForm] = useState(false)
     const [editingIngredient, setEditingIngredient] = useState<number | null>(null)
     const [editingRecipe, setEditingRecipe] = useState<number | null>(null)
+    const [recipefavourites, setRecipefavourites] = useState<number[]>([])
+    const [ingredientfavourites, setIngredientfavourites] = useState<number[]>([])
 
     const [ingredientForm, setIngredientForm] = useState<IngredientForm>({
         name: '',
@@ -111,7 +116,9 @@ export function RecipePage() {
     const [showRecipeBuilder, setShowRecipeBuilder] = useState(false)
 
     useEffect(() => {
-        fetchData()
+        fetchData();
+        fetchRecipefavourites();
+        fetchIngredientfavourites();
     }, [])
 
     const fetchRecipeIngredients = async (recipeId: number) => {
@@ -119,7 +126,6 @@ export function RecipePage() {
             const response = await fetch(`http://localhost:4000/api/recipes/${recipeId}/ingredients`)
             if (response.ok) {
                 const data = await response.json()
-                console.log(data)
                 const formatted = data.map((ri: RawRecipeIngredient) => ({
                     id: ri.id,
                     recipe_id: ri.recipe_id,
@@ -170,6 +176,27 @@ export function RecipePage() {
             setError(err instanceof Error ? err.message : 'Failed to fetch data')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchRecipefavourites = async () => {
+        try {
+            const res = await fetch('http://localhost:4000/api/recipes/favorites')
+            if (!res.ok) throw new Error('Failed to fetch favourites')
+            const data: number[] = await res.json()
+            setRecipefavourites(data)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch favourites')
+        }
+    }
+    const fetchIngredientfavourites = async () => {
+        try {
+            const res = await fetch('http://localhost:4000/api/ingredients/favorites')
+            if (!res.ok) throw new Error('Failed to fetch ingredient favourites')
+            const data: number[] = await res.json()
+            setIngredientfavourites(data)
+        } catch (err) {
+            console.error(err)
         }
     }
 
@@ -382,7 +409,7 @@ export function RecipePage() {
 
         const totals = recipeIngredients.reduce((acc, ri) => {
             const amount = parseFloat(ri.amount_g) || 0
-            const factor = amount / 100 
+            const factor = amount / 100
 
             return {
                 kcal: acc.kcal + (ri.ingredient.kcal_per_100g * factor),
@@ -404,21 +431,65 @@ export function RecipePage() {
 
     const filteredIngredients = ingredients.filter(ingredient =>
         ingredient.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ).sort((a, b) => {
-        if (sortBy === 'alphabetical') {
-            return a.name.localeCompare(b.name)
-        }
-        return b.id - a.id 
-    })
+    )
+    // .sort((a, b) => {
+    //     if (sortBy === 'alphabetical') {
+    //         return a.name.localeCompare(b.name)
+    //     }
+    //     return b.id - a.id 
+    // })
 
     const filteredRecipes = recipes.filter(recipe =>
         recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ).sort((a, b) => {
-        if (sortBy === 'alphabetical') {
-            return a.name.localeCompare(b.name)
+    )
+    // .sort((a, b) => {
+    //     if (sortBy === 'alphabetical') {
+    //         return a.name.localeCompare(b.name)
+    //     }
+    //     return b.id - a.id
+    // })
+
+    const toggleRecipefavourite = async (recipeId: number) => {
+        try {
+            if (recipefavourites.includes(recipeId)) {
+                // Remove favourite
+                const res = await fetch(`http://localhost:4000/api/recipes/${recipeId}/favorite`, {
+                    method: 'DELETE'
+                })
+                if (!res.ok) throw new Error('Failed to remove favourite')
+                setRecipefavourites(prev => prev.filter(id => id !== recipeId))
+            } else {
+                // Add favourite
+                const res = await fetch(`http://localhost:4000/api/recipes/${recipeId}/favorite`, {
+                    method: 'POST'
+                })
+                if (!res.ok) throw new Error('Failed to add favourite')
+                setRecipefavourites(prev => [...prev, recipeId])
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to update favourite recipe')
         }
-        return b.id - a.id
-    })
+    }
+    const toggleIngredientfavourite = async (ingredientId: number) => {
+        console.log('Toggling favourite for ingredient ID:', ingredientId)
+        try {
+            if (ingredientfavourites.includes(ingredientId)) {
+                const res = await fetch(`http://localhost:4000/api/ingredients/${ingredientId}/favorite`, {
+                    method: 'DELETE'
+                })
+                if (!res.ok) throw new Error('Failed to remove favourite')
+                setIngredientfavourites(prev => prev.filter(id => id !== ingredientId))
+            } else {
+                const res = await fetch(`http://localhost:4000/api/ingredients/${ingredientId}/favorite`, {
+                    method: 'POST'
+                })
+                if (!res.ok) throw new Error('Failed to add favourite')
+                setIngredientfavourites(prev => [...prev, ingredientId])
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to update favourite ingredient')
+        }
+    }
 
     if (loading) {
         return (
@@ -454,7 +525,7 @@ export function RecipePage() {
                             className="pl-10"
                         />
                     </div>
-                    <Select value={sortBy} onValueChange={(value: 'alphabetical' | 'recent') => setSortBy(value)}>
+                    {/* <Select value={sortBy} onValueChange={(value: 'alphabetical' | 'recent') => setSortBy(value)}>
                         <SelectTrigger className="w-48">
                             <SelectValue />
                         </SelectTrigger>
@@ -462,7 +533,7 @@ export function RecipePage() {
                             <SelectItem value="alphabetical">Alphabetical</SelectItem>
                             <SelectItem value="recent">Most Recent</SelectItem>
                         </SelectContent>
-                    </Select>
+                    </Select> */}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -531,6 +602,17 @@ export function RecipePage() {
                                                         <p className="text-xs text-muted-foreground">{recipe.servings} servings</p>
                                                     </div>
                                                     <div className="flex gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => toggleRecipefavourite(recipe.id)}
+                                                        >
+                                                            {recipefavourites.includes(recipe.id) ? (
+                                                                <Star fill="yellow" className="h-4 w-4 text-yellow-400" />
+                                                            ) : (
+                                                                <Star className="h-4 w-4 text-muted-foreground" />
+                                                            )}
+                                                        </Button>
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
@@ -671,6 +753,18 @@ export function RecipePage() {
                                                         )}
                                                     </div>
                                                     <div className="flex gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => toggleIngredientfavourite(ingredient.id)}
+                                                        >
+                                                            {ingredientfavourites.includes(ingredient.id) ? (
+                                                                <Star fill="yellow" className="h-4 w-4 text-yellow-400" />
+                                                            ) : (
+                                                                <Star className="h-4 w-4 text-muted-foreground" />
+                                                            )}
+                                                        </Button>
+
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"

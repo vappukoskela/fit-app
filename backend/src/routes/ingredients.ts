@@ -2,6 +2,34 @@ import { Router } from "express";
 import { pool } from '../db';
 
 const router = Router();
+router.get("/favorites/", async (req, res) => {
+    try {
+        const { rows } = await pool.query("SELECT id FROM ingredients WHERE favourite = true");
+        res.json(rows.map(r => r.id));
+    } catch (err) {
+        console.error("Error fetching recipe favorites:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.post("/:id/favorite", async (req, res) => {
+    const { id } = req.params;
+    const { rows } = await pool.query(
+        "UPDATE ingredients SET favourite=true WHERE id=$1 RETURNING *",
+        [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: "Not found" });
+    res.json(rows[0]);
+});
+router.delete("/:id/favorite", async (req, res) => {
+    const { id } = req.params;
+    const { rows } = await pool.query(
+        "UPDATE ingredients SET favourite=false WHERE id=$1 RETURNING *",
+        [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: "Not found" });
+    res.json(rows[0]);
+});
 
 router.post("/", async (req, res) => {
     const {
@@ -25,7 +53,11 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-    const { rows } = await pool.query("SELECT * FROM ingredients ORDER BY name");
+    const { rows } = await pool.query(`
+        SELECT * 
+        FROM ingredients 
+        ORDER BY favourite DESC, last_used_at DESC NULLS LAST, name ASC
+    `);
     res.json(rows);
 });
 

@@ -3,8 +3,39 @@ import { pool } from "../db";
 
 const router = Router();
 
+
+router.get("/favorites/", async (req, res) => {
+    try {
+        const { rows } = await pool.query("SELECT id FROM recipes WHERE favourite = true");
+        res.json(rows.map(r => r.id));
+    } catch (err) {
+        console.error("Error fetching recipe favorites:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.post("/:id/favorite", async (req, res) => {
+    try {
+        await pool.query("UPDATE recipes SET favourite = true WHERE id = $1", [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error setting recipe favorite:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.delete("/:id/favorite", async (req, res) => {
+    try {
+        await pool.query("UPDATE recipes SET favourite = false WHERE id = $1", [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error removing recipe favorite:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 router.get("/", async (req, res) => {
-    const { rows } = await pool.query("SELECT * FROM recipes ORDER BY name");
+    const { rows } = await pool.query("SELECT * FROM recipes ORDER BY favourite DESC, last_used_at DESC NULLS LAST, name ASC");
     res.json(rows);
 });
 
@@ -164,5 +195,7 @@ router.delete("/:recipe_id/ingredients", async (req, res) => {
     await pool.query("DELETE FROM recipe_ingredients WHERE recipe_id=$1", [req.params.recipe_id]);
     res.status(204).end();
 });
+
+
 
 export default router;
