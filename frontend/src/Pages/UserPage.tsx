@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Spinner } from "@/components/ui/shadcn-io/spinner";
+import { LoadingPage } from "@/components/Loading";
 
 interface User {
     id: number;
@@ -50,18 +50,10 @@ export function UserPage() {
         setUsers(await res.json());
     };
 
-    if (loading) {
-        return (
-            <div className="bg-background text-foreground">
-                <main className="p-6">
-                    <div className="flex flex-col justify-center items-center min-h-96 gap-4">
-                        <Spinner variant="ring" />
-                        <div>Loading profile...</div>
-                    </div>
-                </main>
-            </div>
-        )
+   if (loading) {
+        return <LoadingPage message="Loading profile..." />
     }
+
 
     return (
         <main>

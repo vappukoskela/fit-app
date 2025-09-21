@@ -3,7 +3,7 @@ import { FoodDiaryCard } from "@/components/Cards/Dashboard/FoodDiaryCard"
 import { NutritionCard } from "@/components/Cards/Dashboard/NutritionCard"
 import { WeightCard } from "@/components/Cards/Dashboard/WeightCard"
 import { WorkoutCard } from "@/components/Cards/Dashboard/WorkoutCard"
-import { Spinner } from "@/components/ui/shadcn-io/spinner"
+import { LoadingPage } from "@/components/Loading"
 import { useState, useEffect } from "react"
 
 function Dashboard() {
@@ -35,17 +35,10 @@ function Dashboard() {
     }
 
 
-    if (loading) {
-        return (
-            <div className="grid h-screen">
-                <div
-                    className="flex flex-col items-center justify-center gap-4">
-                    <Spinner variant={'ring'} />
-                    <div>Loading dashboard...</div>
-                </div>
-            </div>
-        )
+   if (loading) {
+        return <LoadingPage message="Loading dashboard..." />
     }
+
     return (
         <div className="min-h-screen bg-background text-foreground">
             <main className="p-6">

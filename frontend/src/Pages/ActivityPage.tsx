@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Spinner } from '@/components/ui/shadcn-io/spinner'
+import { LoadingPage } from '@/components/Loading'
 
 
 export function ActivityPage() {
@@ -40,18 +40,10 @@ export function ActivityPage() {
 //     }).format(date)
 //   }
 
-  if (loading) {
-    return (
-      <div className="bg-background text-foreground">
-        <main className="p-6">
-          <div className="flex flex-col justify-center items-center min-h-96 gap-4">
-            <Spinner variant="ring" />
-            <div>Loading activities...</div>
-          </div>
-        </main>
-      </div>
-    )
-  }
+   if (loading) {
+        return <LoadingPage message="Loading activities..." />
+    }
+
 
   else if (error) {
     return (

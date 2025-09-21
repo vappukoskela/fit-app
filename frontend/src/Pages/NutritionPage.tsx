@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Edit2, Save, X, Trash2, Apple, ChefHat, Search } from 'lucide-react'
-import { Spinner } from '@/components/ui/shadcn-io/spinner'
+import { LoadingPage } from '@/components/Loading'
 
 interface FoodEntry {
     id: number
@@ -378,18 +378,10 @@ export function NutritionPage() {
         recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
     ).sort((a, b) => a.name.localeCompare(b.name))
 
-    if (loading) {
-        return (
-            <div className="bg-background text-foreground">
-                <main className="p-6">
-                    <div className="flex flex-col justify-center items-center min-h-96 gap-4">
-                        <Spinner variant="ring" />
-                        <div>Loading food diary...</div>
-                    </div>
-                </main>
-            </div>
-        )
+   if (loading) {
+        return <LoadingPage message="Loading food diary..." />
     }
+
 
     if (error) {
         return (
