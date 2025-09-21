@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Plus, Edit2, Save, X, Trash2, Search, ChefHat, Apple, Star } from 'lucide-react'
+import { IngredientCard } from '@/components/Cards/Foods/IngredientCard'
 
 interface Ingredient {
     id: number
@@ -524,19 +525,10 @@ export function RecipePage() {
                             className="pl-10"
                         />
                     </div>
-                    {/* <Select value={sortBy} onValueChange={(value: 'alphabetical' | 'recent') => setSortBy(value)}>
-                        <SelectTrigger className="w-48">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                            <SelectItem value="recent">Most Recent</SelectItem>
-                        </SelectContent>
-                    </Select> */}
+
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Recipes Column */}
                     <div className="space-y-4">
                         <Card>
                             <CardHeader>
@@ -735,54 +727,16 @@ export function RecipePage() {
                                 )}
 
                                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                                    {filteredIngredients.map(ingredient => (
-                                        <Card key={ingredient.id} className="hover:shadow-md transition-shadow"
-                                            onDoubleClick={() => addIngredientToRecipe(ingredient)}>
-                                            <CardContent className="p-3">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex-1">
-                                                        <h4 className="font-semibold">{ingredient.name}</h4>
-                                                        <div className="text-xs text-muted-foreground">
-                                                            Per 100g: {ingredient.kcal_per_100g}kcal, P:{ingredient.protein_per_100g}g, C:{ingredient.carbs_per_100g}g, F:{ingredient.fat_per_100g}g
-                                                        </div>
-                                                        {ingredient.serving_description && (
-                                                            <div className="text-xs text-muted-foreground">
-                                                                {ingredient.serving_description} ({ingredient.serving_size_g}g): ~{ingredient.kcal_per_serving}kcal
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex gap-1">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => toggleIngredientfavourite(ingredient.id)}
-                                                        >
-                                                            {ingredientfavourites.includes(ingredient.id) ? (
-                                                                <Star fill="yellow" className="h-4 w-4 text-yellow-400" />
-                                                            ) : (
-                                                                <Star className="h-4 w-4 text-muted-foreground" />
-                                                            )}
-                                                        </Button>
-
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => editIngredient(ingredient)}
-                                                        >
-                                                            <Edit2 className="h-3 w-3" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => deleteIngredient(ingredient.id)}
-                                                            className="text-destructive hover:text-destructive"
-                                                        >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
+                                    {filteredIngredients.map((ingredient) => (
+                                        <IngredientCard
+                                            key={ingredient.id}
+                                            ingredient={ingredient}
+                                            isFavourite={ingredientfavourites.includes(ingredient.id)}
+                                            onToggleFavourite={() => toggleIngredientfavourite(ingredient.id)}
+                                            onAddToRecipe={addIngredientToRecipe}
+                                            onEdit={editIngredient}
+                                            onDelete={deleteIngredient}
+                                        />
                                     ))}
                                 </div>
                             </CardContent>
