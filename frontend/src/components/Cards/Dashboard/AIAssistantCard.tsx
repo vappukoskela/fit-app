@@ -29,6 +29,8 @@ interface ParsedResponse {
 const parseNaturalLanguageFoodEntry = async (input: string): Promise<ParsedResponse> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  console.log(input)
 
   // Mock response based on input
   const mockResponse: ParsedResponse = {
