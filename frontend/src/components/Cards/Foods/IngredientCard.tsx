@@ -37,7 +37,7 @@ export function IngredientCard({
   return (
     <Card
       key={ingredient.id}
-      className="hover:shadow-md transition-shadow cursor-pointer"
+      className="hover:shadow-md transition-shadow "
       onDoubleClick={() => onAddToRecipe?.(ingredient)}
     >
       <CardContent className="p-3">
@@ -56,9 +56,8 @@ export function IngredientCard({
             )}
           </div>
 
-          {/* Only render actions if props were passed */}
           {(onToggleFavourite || onEdit || onDelete) && (
-            <div className="flex gap-1">
+            <div className="flex gap-1 ">
               {onToggleFavourite && (
                 <Button variant="ghost" size="sm" onClick={onToggleFavourite}>
                   {isFavourite ? (
