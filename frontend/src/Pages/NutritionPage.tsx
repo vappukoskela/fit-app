@@ -253,7 +253,7 @@ export function NutritionPage() {
             grams = isServing
                 ? qty * (selectedIngredient.serving_size_g || 0)
                 : qty
-            
+
             const nutrition = calculateNutritionFromIngredient(selectedIngredient, grams)
             setNewEntryForm(prev => ({
                 ...prev,
@@ -378,7 +378,7 @@ export function NutritionPage() {
         recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
     ).sort((a, b) => a.name.localeCompare(b.name))
 
-   if (loading) {
+    if (loading) {
         return <LoadingPage message="Loading food diary..." />
     }
 

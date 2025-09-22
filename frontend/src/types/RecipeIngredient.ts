@@ -15,14 +15,14 @@ export interface Ingredient {
     last_used_at?: string | null
 }
 
-export interface IngredientForm {
+export interface Recipe {
+    id: number
     name: string
-    kcal_per_100g: string
-    protein_per_100g: string
-    carbs_per_100g: string
-    fat_per_100g: string
-    serving_size_g: string
-    serving_description: string
+    description: string | null
+    servings: number
+    ingredients?: RecipeIngredient[]
+    favourite?: boolean
+    last_used_at?: string | null
 }
 
 export interface RecipeIngredient {
@@ -51,20 +51,4 @@ export interface RawRecipeIngredient {
     protein_per_serving: string | null
     carbs_per_serving: string | null
     fat_per_serving: string | null
-}
-
-export interface RecipeForm {
-    name: string
-    description: string
-    servings: string
-}
-
-export interface Recipe {
-    id: number
-    name: string
-    description: string | null
-    servings: number
-    ingredients?: RecipeIngredient[]
-    favourite?: boolean
-    last_used_at?: string | null
 }
