@@ -21,6 +21,9 @@ interface RecipeBuilderProps {
     recipeIngredients: RecipeBuilderIngredient[]
 }
 
+// TODO: Ingredient render optimization w React.memo? Or smth else?
+// TODO: Ingredient portion handling where applicable
+
 export function RecipeBuilder({
     recipe,
     onClose,
@@ -97,7 +100,7 @@ export function RecipeBuilder({
             setLoading(false)
         }
     }
-    
+
     const calculateRecipeNutrition = useCallback(() => {
         if (localRecipeIngredients.length === 0) return null
 

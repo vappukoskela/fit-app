@@ -47,7 +47,6 @@ export function RecipePage() {
     const handleRecipeSelect = async (recipe: Recipe) => {
         setSelectedRecipe(recipe)
         setIsBuilding(true)
-        // Load existing recipe ingredients
         try {
             const data = await fetchRecipeIngredients(recipe.id)
             const formatted = data.map(ri => ({
