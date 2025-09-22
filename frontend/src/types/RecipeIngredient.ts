@@ -16,13 +16,21 @@ export interface Ingredient {
 }
 
 export interface Recipe {
-    id: number
-    name: string
-    description: string | null
-    servings: number
-    ingredients?: RecipeIngredient[]
-    favourite?: boolean
-    last_used_at?: string | null
+  id: number
+  name: string
+  description?: string
+  servings: number
+  total_kcal?: number
+  total_protein?: number
+  total_carbs?: number
+  total_fat?: number
+  kcal_per_portion?: number
+  protein_per_portion?: number
+  carbs_per_portion?: number
+  fat_per_portion?: number
+  favourite?: boolean
+  last_used_at?: string
+  ingredients?: RecipeIngredient[]
 }
 
 export interface RecipeIngredient {

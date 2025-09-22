@@ -55,7 +55,11 @@ export function RecipeBuilder({
 
     useEffect(() => {
         if (recipeIngredients.length > 0) {
-            setLocalRecipeIngredients(recipeIngredients)
+            setLocalRecipeIngredients(prev => {
+                const existingIds = prev.map(ri => ri.ingredient.id)
+                const newIngredients = recipeIngredients.filter(ri => !existingIds.includes(ri.ingredient.id))
+                return [...prev, ...newIngredients]
+            })
         } else {
             loadRecipeIngredients()
         }

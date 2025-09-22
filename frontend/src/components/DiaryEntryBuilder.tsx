@@ -23,55 +23,54 @@ export function DiaryEntryBuilder({
     const [amount, setAmount] = useState<string>("")
     const [usePortions, setUsePortions] = useState(false)
 
-    const nutrition = useMemo(() => {
-        if (selectedIngredient) {
-            const grams = usePortions
-                ? (parseFloat(amount) || 0) * (selectedIngredient.serving_size_g || 0)
-                : parseFloat(amount) || 0
-            const factor = grams / 100
-            return {
-                kcal: selectedIngredient.kcal_per_100g * factor,
-                protein: selectedIngredient.protein_per_100g * factor,
-                carbs: selectedIngredient.carbs_per_100g * factor,
-                fat: selectedIngredient.fat_per_100g * factor,
-                grams,
-            }
+const nutrition = useMemo(() => {
+    if (selectedIngredient) {
+        const grams = usePortions
+            ? (parseFloat(amount) || 0) * (selectedIngredient.serving_size_g || 0)
+            : parseFloat(amount) || 0
+        const factor = grams / 100
+        return {
+            kcal: selectedIngredient.kcal_per_100g * factor,
+            protein: selectedIngredient.protein_per_100g * factor,
+            carbs: selectedIngredient.carbs_per_100g * factor,
+            fat: selectedIngredient.fat_per_100g * factor,
+            grams,
+        }
+    }
+
+    if (selectedRecipe) {
+        const portions = parseFloat(amount) || 0
+        const totals = selectedRecipe.ingredients?.reduce(
+            (acc, ri) => {
+                const factor = ri.amount_g / 100
+                return {
+                    kcal: acc.kcal + (ri.ingredient?.kcal_per_100g || 0) * factor,
+                    protein: acc.protein + (ri.ingredient?.protein_per_100g || 0) * factor,
+                    carbs: acc.carbs + (ri.ingredient?.carbs_per_100g || 0) * factor,
+                    fat: acc.fat + (ri.ingredient?.fat_per_100g || 0) * factor,
+                }
+            },
+            { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+        ) || { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+
+        const perPortion = {
+            kcal: totals.kcal / selectedRecipe.servings,
+            protein: totals.protein / selectedRecipe.servings,
+            carbs: totals.carbs / selectedRecipe.servings,
+            fat: totals.fat / selectedRecipe.servings,
         }
 
-        if (selectedRecipe) {
-            const servings = parseFloat(amount) || 0
-            // Assume you have nutrition pre-calculated per serving for recipes
-            const totals = selectedRecipe.ingredients?.reduce(
-                (acc, ri) => {
-                    const factor = ri.amount_g / 100
-                    return {
-                        kcal: acc.kcal + (ri.ingredient?.kcal_per_100g || 0) * factor,
-                        protein: acc.protein + (ri.ingredient?.protein_per_100g || 0) * factor,
-                        carbs: acc.carbs + (ri.ingredient?.carbs_per_100g || 0) * factor,
-                        fat: acc.fat + (ri.ingredient?.fat_per_100g || 0) * factor,
-                    }
-                },
-                { kcal: 0, protein: 0, carbs: 0, fat: 0 }
-            ) || { kcal: 0, protein: 0, carbs: 0, fat: 0 }
-
-            const perServing = {
-                kcal: totals.kcal / selectedRecipe.servings,
-                protein: totals.protein / selectedRecipe.servings,
-                carbs: totals.carbs / selectedRecipe.servings,
-                fat: totals.fat / selectedRecipe.servings,
-            }
-
-            return {
-                kcal: perServing.kcal * servings,
-                protein: perServing.protein * servings,
-                carbs: perServing.carbs * servings,
-                fat: perServing.fat * servings,
-                grams: null,
-            }
+        return {
+            kcal: perPortion.kcal * portions,
+            protein: perPortion.protein * portions,
+            carbs: perPortion.carbs * portions,
+            fat: perPortion.fat * portions,
+            grams: null,
         }
+    }
 
-        return null
-    }, [amount, usePortions, selectedIngredient, selectedRecipe])
+    return null
+}, [amount, usePortions, selectedIngredient, selectedRecipe])
 
     const handleSave = async () => {
         if (!nutrition) return

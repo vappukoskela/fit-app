@@ -159,7 +159,9 @@ export function RecipeList({
                                     {recipe.description && (
                                         <p className="text-sm text-muted-foreground">{recipe.description}</p>
                                     )}
-                                    <p className="text-xs text-muted-foreground">{recipe.servings} servings</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {recipe.servings} servings - {recipe.kcal_per_portion} kcal/portion
+                                    </p>
                                 </div>
                                 <div className="flex gap-1">
                                     <Button
