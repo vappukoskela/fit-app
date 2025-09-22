@@ -27,6 +27,29 @@ interface IngredientListProps {
 const ITEM_HEIGHT = 80
 const CONTAINER_HEIGHT = 400
 
+function parseNutritionText(input: string) {
+    const text = input
+        .toLowerCase()
+        .replace(/,/g, ".")
+        .replace(/\s+/g, " ")
+
+    const findValue = (keywords: string[]): number | null => {
+        for (const kw of keywords) {
+            const regex = new RegExp(`${kw}[^\\d]*(\\d+(?:\\.\\d+)?)`, "i")
+            const match = text.match(regex)
+            if (match) return parseFloat(match[1])
+        }
+        return null
+    }
+
+    return {
+        kcal: findValue(["(\\d+(?:[.,]\\d+)?)\\s*(?:kcal|cal)", "energia[^\\d]*(\\d+(?:[.,]\\d+)?)\\s*kcal"]),
+        protein: findValue(["\\bp\\b", "protein", "proteiini", "proteiinia"]),
+        carbs: findValue(["\\bc\\b", "carbs", "carb", "hiilihydraatit", "hiilihydraatti", "hiilihydraattia", "carbohydrates"]),
+        fat: findValue(["\\bf\\b", "rasva", "rasvaa", "fat", "fats"])
+    }
+}
+
 export function IngredientList({
     ingredients,
     favourites,
@@ -39,7 +62,6 @@ export function IngredientList({
     const [error, setError] = useState<string | null>(null)
     const [scrollTop, setScrollTop] = useState(0)
     const [localSearch, setLocalSearch] = useState('')
-    
     const containerRef = useRef<HTMLDivElement>(null)
 
     const [form, setForm] = useState<IngredientForm>({
@@ -52,6 +74,8 @@ export function IngredientList({
         serving_description: ''
     })
 
+    const [freeFormText, setFreeFormText] = useState('')
+
     const filteredIngredients = useMemo(() => {
         if (isRecipeBuilding && localSearch.trim()) {
             return ingredients.filter(ingredient =>
@@ -63,10 +87,10 @@ export function IngredientList({
 
     const { visibleItems, totalHeight, startIndex } = useMemo(() => {
         const itemCount = filteredIngredients.length
-        const visibleCount = Math.ceil(CONTAINER_HEIGHT / ITEM_HEIGHT) + 2 // Buffer
+        const visibleCount = Math.ceil(CONTAINER_HEIGHT / ITEM_HEIGHT) + 2
         const start = Math.floor(scrollTop / ITEM_HEIGHT)
         const end = Math.min(start + visibleCount, itemCount)
-        
+
         return {
             visibleItems: filteredIngredients.slice(start, end),
             totalHeight: itemCount * ITEM_HEIGHT,
@@ -81,6 +105,17 @@ export function IngredientList({
 
     const calculateServingValues = (per100g: number, servingSize: number) => {
         return (per100g * servingSize / 100)
+    }
+
+    const handleParse = () => {
+        const result = parseNutritionText(freeFormText)
+        setForm(prev => ({
+            ...prev,
+            kcal_per_100g: result.kcal?.toString() || prev.kcal_per_100g,
+            protein_per_100g: result.protein?.toString() || prev.protein_per_100g,
+            carbs_per_100g: result.carbs?.toString() || prev.carbs_per_100g,
+            fat_per_100g: result.fat?.toString() || prev.fat_per_100g,
+        }))
     }
 
     const handleSubmit = async () => {
@@ -140,7 +175,6 @@ export function IngredientList({
 
     const handleDelete = async (id: number) => {
         if (!confirm('Delete this ingredient?')) return
-
         try {
             const response = await fetch(`http://localhost:4000/api/ingredients/${id}`, {
                 method: 'DELETE'
@@ -162,6 +196,7 @@ export function IngredientList({
             serving_size_g: '',
             serving_description: ''
         })
+        setFreeFormText('')
         setShowForm(false)
         setEditingId(null)
         setError(null)
@@ -202,6 +237,17 @@ export function IngredientList({
                             value={form.name}
                             onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
                         />
+
+                        <div className="text-sm font-medium">Paste nutrition label:</div>
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder="Paste per 100g nutrition info here or type kcal, P, C, F values freely"
+                                value={freeFormText}
+                                onChange={(e) => setFreeFormText(e.target.value)}
+                                onBlur={handleParse}
+                            />
+                            <Button variant="outline" onClick={handleParse}>Parse</Button>
+                        </div>
 
                         <div className="text-sm font-medium">Per 100g values:</div>
                         <div className="grid grid-cols-2 gap-2">
@@ -265,15 +311,15 @@ export function IngredientList({
                 </Card>
             )}
 
-            <div 
+            <div
                 ref={containerRef}
                 className="overflow-y-auto"
                 style={{ height: CONTAINER_HEIGHT }}
                 onScroll={handleScroll}
             >
                 <div style={{ height: totalHeight, position: 'relative' }}>
-                    <div 
-                        style={{ 
+                    <div
+                        style={{
                             transform: `translateY(${startIndex * ITEM_HEIGHT}px)`,
                             position: 'absolute',
                             top: 0,
@@ -282,8 +328,8 @@ export function IngredientList({
                         }}
                     >
                         {visibleItems.map((ingredient) => (
-                            <div 
-                                key={ingredient.id} 
+                            <div
+                                key={ingredient.id}
                                 style={{ height: ITEM_HEIGHT }}
                                 className="pb-2"
                             >
