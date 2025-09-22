@@ -77,7 +77,7 @@ export function RecipePage() {
         fetchIngredients()
     }
 
-    const handleToggleIngredientInRecipe = (ingredient: Ingredient) => {
+    const handleAddIngredientInRecipe = (ingredient: Ingredient) => {
         const isAdded = recipeIngredients.some(ri => ri.ingredient.id === ingredient.id)
         if (isAdded) {
             setRecipeIngredients(prev => prev.filter(ri => ri.ingredient.id !== ingredient.id))
@@ -141,7 +141,7 @@ export function RecipePage() {
                                 onClose={handleRecipeBuilderClose}
                                 onUpdate={handleRecipeUpdate}
                                 fetchRecipeIngredients={fetchRecipeIngredients}
-                                onToggleIngredient={handleToggleIngredientInRecipe}
+                                onToggleIngredient={handleAddIngredientInRecipe}
                                 recipeIngredients={recipeIngredients}
                             />
                         ) : (
@@ -186,7 +186,7 @@ export function RecipePage() {
                                                 key={ingredient.id}
                                                 ingredient={ingredient}
                                                 isAdded={recipeIngredients.some(ri => ri.ingredient.id === ingredient.id)}
-                                                onToggleAdd={handleToggleIngredientInRecipe}
+                                                onAdd={handleAddIngredientInRecipe}
                                             />
                                         ))}
                                         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded text-sm text-blue-700 dark:text-blue-300">

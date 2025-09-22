@@ -1,45 +1,30 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Check } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
-
-interface Ingredient {
-    id: number;
-    name: string;
-    kcal_per_100g: number;
-    protein_per_100g: number;
-    carbs_per_100g: number;
-    fat_per_100g: number;
-    serving_size_g: number | null;
-    serving_description: string | null;
-    kcal_per_serving: number | null;
-    protein_per_serving: number | null;
-    carbs_per_serving: number | null;
-    fat_per_serving: number | null;
-}
+import type { Ingredient } from "@/types/RecipeIngredient";    
 
 interface RecipeIngredientCardProps {
     ingredient: Ingredient;
     isAdded: boolean;
-    onToggleAdd: (ingredient: Ingredient) => void;
+    onAdd: (ingredient: Ingredient) => void;
 }
 
 export function RecipeIngredientCard({
     ingredient,
     isAdded,
-    onToggleAdd,
+    onAdd,
 }: RecipeIngredientCardProps) {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
         <Card
-            className={`transition-all cursor-pointer ${isAdded
-                    ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950'
-                    : 'hover:shadow-md hover:bg-muted/30'
+            className={`transition-all ${isAdded
+                    ? "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950"
+                    : "cursor-pointer hover:shadow-md hover:bg-muted/30"
                 }`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onClick={() => onToggleAdd(ingredient)}
         >
             <CardContent className="p-3">
                 <div className="flex justify-between items-start">
@@ -62,28 +47,19 @@ export function RecipeIngredientCard({
                         )}
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        {(isHovered || isAdded) && (
-                            <Button
-                                variant={isAdded ? "default" : "outline"}
-                                size="sm"
-                                className={`transition-all ${isAdded
-                                        ? 'bg-green-600 hover:bg-green-700 text-white'
-                                        : 'hover:bg-primary hover:text-primary-foreground'
-                                    }`}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onToggleAdd(ingredient);
-                                }}
-                            >
-                                {isAdded ? (
-                                    <Check className="h-3 w-3" />
-                                ) : (
-                                    <Plus className="h-3 w-3" />
-                                )}
-                            </Button>
-                        )}
-                    </div>
+                    {!isAdded && (isHovered || !isHovered) && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="transition-all hover:bg-primary hover:text-primary-foreground"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAdd(ingredient);
+                            }}
+                        >
+                            <Plus className="h-3 w-3" />
+                        </Button>
+                    )}
                 </div>
             </CardContent>
         </Card>
