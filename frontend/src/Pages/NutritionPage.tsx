@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Apple, ChefHat, Search, Edit2, Save, X, Trash2 } from 'lucide-react'
+import { Plus, Apple, ChefHat, Search, Edit2, Save, X, Trash2, Coffee } from 'lucide-react'
 import { LoadingPage } from '@/components/Loading'
 
 interface FoodEntry {
@@ -363,6 +363,16 @@ export function NutritionPage() {
         ...Object.keys(groupedEntries).map(normalizeDate),
     ])).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
+    const selectiKaffe = (): void => {
+        const iKaffeIngredient: Ingredient | undefined = ingredients.find(i => i.id === 34876)
+        if (iKaffeIngredient) {
+            selectIngredient(iKaffeIngredient);
+            updateQuantity("200", false);
+        } else {
+            setError("404 iKaffe not found :(");
+        }
+    }
+
     return (
         <div className="min-h-screen bg-background text-foreground p-6">
             <div className="max-w-7xl mx-auto">
@@ -377,7 +387,6 @@ export function NutritionPage() {
                     <Card className="mb-6">
                         <CardContent className="p-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {/* LEFT COLUMN: Main form */}
                                 <div className="space-y-4">
                                     <h3 className="font-semibold">Add Food Entry</h3>
                                     <div className="grid grid-cols-2 gap-3">
@@ -410,6 +419,14 @@ export function NutritionPage() {
                                         >
                                             <ChefHat className="h-4 w-4 mr-2" /> Add Recipe
                                         </Button>
+                                        {newEntryForm.meal === 'Breakfast' && (
+                                            <Button
+                                                variant={"outline"}
+                                                onClick={() => selectiKaffe()}
+                                            >
+                                                <Coffee className="h-4 w-4 mr-2" /> Oatly iKaffe
+                                            </Button>
+                                        )}
                                     </div>
 
                                     <Textarea
