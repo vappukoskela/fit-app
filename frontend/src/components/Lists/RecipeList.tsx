@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { Plus, Edit2, Save, X, Trash2, ChefHat, Star } from 'lucide-react'
 import type { Recipe } from '@/types/RecipeIngredient'
 
@@ -119,25 +120,48 @@ export function RecipeList({
             {showForm && (
                 <Card className="border-dashed">
                     <CardContent className="p-4 space-y-3">
-                        <Input
-                            placeholder="Recipe name"
-                            value={form.name}
-                            onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
-                        />
-                        <Textarea
-                            placeholder="Description (optional)"
-                            value={form.description}
-                            onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
-                            rows={2}
-                        />
-                        <Input
-                            type="number"
-                            placeholder="Number of servings"
-                            value={form.servings}
-                            onChange={(e) => setForm(prev => ({ ...prev, servings: e.target.value }))}
-                        />
+                        <div className="grid grid-cols-4 gap-4">
+                            <div className="col-span-3 space-y-2">
+                                <Label htmlFor="recipe-name" className="text-sm font-medium">
+                                    Recipe Name
+                                </Label>
+                                <Input
+                                    id="recipe-name"
+                                    placeholder='e.g. "Spag Bol with Carrots"'
+                                    value={form.name}
+                                    onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+                                    className="text-base"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="servings" className="text-sm font-medium">
+                                    Servings
+                                </Label>
+                                <Input
+                                    id="servings"
+                                    type="number"
+                                    min="1"
+                                    value={form.servings}
+                                    onChange={(e) => setForm(prev => ({ ...prev, servings: e.target.value }))}
+                                    className="text-center font-medium text-muted-foreground"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="description" className="text-sm font-medium">
+                                Description <span className="text-muted-foreground font-normal">(optional)</span>
+                            </Label>
+                            <Textarea
+                                id="description"
+                                placeholder='Description or cooking instructions'
+                                value={form.description}
+                                onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
+                                rows={3}
+                                className="resize-none"
+                            />
+                        </div>
                         <div className="flex gap-2">
-                            <Button onClick={handleSubmit} className="flex-1">
+                            <Button onClick={handleSubmit} className="flex-1"disabled={!form.name.trim()}>
                                 <Save className="h-4 w-4 mr-2" />
                                 {editingId ? 'Update' : 'Save'} Recipe
                             </Button>

@@ -2,7 +2,8 @@ import { useState, useMemo, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Save, X } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Plus, Save, X, Wand2 } from 'lucide-react'
 import { IngredientCard } from '@/components/Cards/Foods/IngredientCard'
 import type { Ingredient } from '@/types/RecipeIngredient'
 
@@ -231,79 +232,155 @@ export function IngredientList({
 
             {showForm && (
                 <Card className="border-dashed">
-                    <CardContent className="p-4 space-y-3">
-                        <Input
-                            placeholder="Ingredient name"
-                            value={form.name}
-                            onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
-                        />
-
-                        <div className="text-sm font-medium">Paste nutrition label:</div>
-                        <div className="flex gap-2">
+                    <CardContent className="p-6 space-y-5">
+                        <div className="space-y-2">
+                            <Label htmlFor="ingredient-name" className="text-sm font-medium">
+                                Ingredient Name
+                            </Label>
                             <Input
-                                placeholder="Paste per 100g nutrition info here or type kcal, P, C, F values freely"
-                                value={freeFormText}
-                                onChange={(e) => setFreeFormText(e.target.value)}
-                                onBlur={handleParse}
-                            />
-                            <Button variant="outline" onClick={handleParse}>Parse</Button>
-                        </div>
-
-                        <div className="text-sm font-medium">Per 100g values:</div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Input
-                                type="number"
-                                placeholder="Calories"
-                                value={form.kcal_per_100g}
-                                onChange={(e) => setForm(prev => ({ ...prev, kcal_per_100g: e.target.value }))}
-                            />
-                            <Input
-                                type="number"
-                                placeholder="Protein (g)"
-                                value={form.protein_per_100g}
-                                onChange={(e) => setForm(prev => ({ ...prev, protein_per_100g: e.target.value }))}
-                            />
-                            <Input
-                                type="number"
-                                placeholder="Carbs (g)"
-                                value={form.carbs_per_100g}
-                                onChange={(e) => setForm(prev => ({ ...prev, carbs_per_100g: e.target.value }))}
-                            />
-                            <Input
-                                type="number"
-                                placeholder="Fat (g)"
-                                value={form.fat_per_100g}
-                                onChange={(e) => setForm(prev => ({ ...prev, fat_per_100g: e.target.value }))}
+                                id="ingredient-name"
+                                placeholder='Enter ingredient name, e.g "apple"'
+                                value={form.name}
+                                onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+                                className="text-base"
                             />
                         </div>
 
-                        <div className="text-sm font-medium">Serving size (optional):</div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Input
-                                type="number"
-                                placeholder="Serving size (g)"
-                                value={form.serving_size_g}
-                                onChange={(e) => setForm(prev => ({ ...prev, serving_size_g: e.target.value }))}
-                            />
-                            <Input
-                                placeholder="e.g. '1 medium'"
-                                value={form.serving_description}
-                                onChange={(e) => setForm(prev => ({ ...prev, serving_description: e.target.value }))}
-                            />
+                        <div className="space-y-3">
+                            <Label className="text-sm font-medium">
+                                Quick Parse
+                            </Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Paste nutrition info or type: 250 kcal, 20g P, 30g C, 5g F"
+                                    value={freeFormText}
+                                    onChange={(e) => setFreeFormText(e.target.value)}
+                                    onBlur={handleParse}
+                                    className="flex-1"
+                                />
+                                <Button
+                                    variant="outline"
+                                    onClick={handleParse}
+                                    className="px-3"
+                                >
+                                    <Wand2 className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
-
+                        <div className="space-y-3">
+                            <Label className="text-sm font-medium">
+                                Per 100g Values
+                            </Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <Label htmlFor="calories" className="text-xs text-muted-foreground">
+                                        Calories
+                                    </Label>
+                                    <Input
+                                        id="calories"
+                                        type="number"
+                                        placeholder="250"
+                                        value={form.kcal_per_100g}
+                                        onChange={(e) => setForm(prev => ({ ...prev, kcal_per_100g: e.target.value }))}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="protein" className="text-xs text-muted-foreground">
+                                        Protein (g)
+                                    </Label>
+                                    <Input
+                                        id="protein"
+                                        type="number"
+                                        placeholder="20"
+                                        value={form.protein_per_100g}
+                                        onChange={(e) => setForm(prev => ({ ...prev, protein_per_100g: e.target.value }))}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="carbs" className="text-xs text-muted-foreground">
+                                        Carbs (g)
+                                    </Label>
+                                    <Input
+                                        id="carbs"
+                                        type="number"
+                                        placeholder="30"
+                                        value={form.carbs_per_100g}
+                                        onChange={(e) => setForm(prev => ({ ...prev, carbs_per_100g: e.target.value }))}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="fat" className="text-xs text-muted-foreground">
+                                        Fat (g)
+                                    </Label>
+                                    <Input
+                                        id="fat"
+                                        type="number"
+                                        placeholder="5"
+                                        value={form.fat_per_100g}
+                                        onChange={(e) => setForm(prev => ({ ...prev, fat_per_100g: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-3">
+                            <Label className="text-sm font-medium">
+                                Serving Size <span className="text-muted-foreground font-normal">(optional)</span>
+                            </Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <Label htmlFor="serving-weight" className="text-xs text-muted-foreground">
+                                        Weight (g)
+                                    </Label>
+                                    <Input
+                                        id="serving-weight"
+                                        type="number"
+                                        placeholder="150"
+                                        value={form.serving_size_g}
+                                        onChange={(e) => setForm(prev => ({ ...prev, serving_size_g: e.target.value }))}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="serving-desc" className="text-xs text-muted-foreground">
+                                        Description
+                                    </Label>
+                                    <Input
+                                        id="serving-desc"
+                                        placeholder="1 medium apple"
+                                        value={form.serving_description}
+                                        onChange={(e) => setForm(prev => ({ ...prev, serving_description: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                         {form.serving_size_g && form.kcal_per_100g && (
-                            <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
-                                Per serving: ~{Math.round(calculateServingValues(parseFloat(form.kcal_per_100g), parseFloat(form.serving_size_g)))} kcal
+                            <div className="bg-muted/50 rounded-lg p-3 border">
+                                <div className="text-xs font-medium text-muted-foreground mb-1">Per Serving Preview</div>
+                                <div className="text-sm">
+                                    <span className="font-medium">
+                                        ~{Math.round(calculateServingValues(parseFloat(form.kcal_per_100g), parseFloat(form.serving_size_g)))} kcal
+                                    </span>
+                                    {form.serving_description && (
+                                        <span className="text-muted-foreground ml-2">
+                                            ({form.serving_description})
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         )}
-
-                        <div className="flex gap-2">
-                            <Button onClick={handleSubmit} className="flex-1">
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                onClick={handleSubmit}
+                                className="flex-1 h-11"
+                                disabled={!form.name.trim() || !form.kcal_per_100g}
+                            >
                                 <Save className="h-4 w-4 mr-2" />
-                                {editingId ? 'Update' : 'Save'} Ingredient
+                                {editingId ? 'Update Ingredient' : 'Save Ingredient'}
                             </Button>
-                            <Button variant="outline" onClick={resetForm}>
+                            <Button
+                                variant="outline"
+                                onClick={resetForm}
+                                className="h-11 px-4"
+                            >
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>

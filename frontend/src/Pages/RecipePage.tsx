@@ -9,6 +9,7 @@ import { IngredientList } from '@/components/Lists/IngredientList'
 import { RecipeBuilder } from '@/components/RecipeBuilder'
 import { RecipeIngredientCard } from '@/components/Cards/Foods/RecipeIngredientCard'
 import type { Recipe, Ingredient } from '@/types/RecipeIngredient'
+import { LoadingPage } from '@/components/Loading'
 
 interface RecipeBuilderIngredient {
     ingredient: Ingredient
@@ -99,11 +100,7 @@ export function RecipePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-background text-foreground p-6">
-                <div className="flex justify-center items-center min-h-96">
-                    <div className="text-muted-foreground">Loading...</div>
-                </div>
-            </div>
+           <LoadingPage />
         )
     }
 
