@@ -375,7 +375,7 @@ export function NutritionPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground p-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-2xl mx-auto">
                 <div className="flex justify-between mb-6">
                     <h1 className="text-2xl font-bold">Food Diary</h1>
                     <Button onClick={() => setShowAddForm(!showAddForm)}>
@@ -496,7 +496,7 @@ export function NutritionPage() {
                     </Card>
                 )}
             </div>
-            <div className="space-y-6">
+            <div className="max-w-2xl mx-auto space-y-6">
                 {allDates.map(date => {
                     const dayEntries = groupedEntries[date] || []
                     const dayTotals = calculateDayTotals(dayEntries)
@@ -592,14 +592,14 @@ export function NutritionPage() {
                                             <div className="flex justify-between items-start">
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-3 mb-2">
-                                                        <span className="bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium">
+                                                        <span className="bg-primary/60 text-muted-foreground/70 px-4 py-1 rounded text-sm font-medium">
                                                             {entry.meal}
                                                         </span>
                                                         <span className="text-lg font-semibold">
                                                             {Number(entry.kcal).toFixed(0)} kcal
                                                         </span>
                                                     </div>
-                                                    <p className="text-foreground mb-2">{entry.description}</p>
+                                                    <p className="text-foreground mb-2 ">{entry.description}</p>
                                                     <div className="flex gap-4 text-sm text-muted-foreground">
                                                         <span>P: {Number(entry.protein).toFixed(1)}g</span>
                                                         <span>C: {Number(entry.carbs).toFixed(1)}g</span>
