@@ -56,6 +56,8 @@ interface NewEntryForm {
     unit: 'g' | 'serving'
 }
 
+type EntryItem = Ingredient | Recipe;
+
 const MEAL_OPTIONS = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Other']
 
 export function NutritionPage() {
@@ -236,15 +238,15 @@ export function NutritionPage() {
         }))
     }
 
-    const updateQuantity = (quantity: string, isServing = false) => {
-        const qty = parseFloat(quantity) || 0
+    const updateQuantity = (quantity: string, isServing = false, item?: EntryItem) => {
+        if (!item) return;
 
-        if (selectedIngredient) {
-            const grams = isServing
-                ? qty * (selectedIngredient.serving_size_g || 0)
-                : qty
+        const qty = parseFloat(quantity) || 0;
+        const isIngredient = (i: EntryItem): i is Ingredient => 'serving_size_g' in i;
 
-            const nutrition = calculateNutritionFromIngredient(selectedIngredient, grams)
+        if (isIngredient(item)) {
+            const grams = isServing ? qty * (item.serving_size_g || 0) : qty;
+            const nutrition = calculateNutritionFromIngredient(item, grams);
             setNewEntryForm(prev => ({
                 ...prev,
                 quantity: isServing ? qty.toString() : grams.toString(),
@@ -252,9 +254,9 @@ export function NutritionPage() {
                 protein: nutrition.protein.toFixed(1),
                 carbs: nutrition.carbs.toFixed(1),
                 fat: nutrition.fat.toFixed(1)
-            }))
-        } else if (selectedRecipe) {
-            const nutrition = calculateNutritionFromRecipe(selectedRecipe, qty)
+            }));
+        } else {
+            const nutrition = calculateNutritionFromRecipe(item, qty);
             setNewEntryForm(prev => ({
                 ...prev,
                 quantity: qty.toString(),
@@ -262,9 +264,10 @@ export function NutritionPage() {
                 protein: nutrition.protein.toFixed(1),
                 carbs: nutrition.carbs.toFixed(1),
                 fat: nutrition.fat.toFixed(1)
-            }))
+            }));
         }
-    }
+    };
+
 
     const handleAddEntry = async () => {
         try {
@@ -367,7 +370,7 @@ export function NutritionPage() {
         const iKaffeIngredient: Ingredient | undefined = ingredients.find(i => i.id === 34876)
         if (iKaffeIngredient) {
             selectIngredient(iKaffeIngredient);
-            updateQuantity("200", false);
+            updateQuantity("200", false, iKaffeIngredient);
         } else {
             setError("404 iKaffe not found :(");
         }
@@ -375,7 +378,7 @@ export function NutritionPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground p-6">
-            <div className="max-w-2xl mx-auto">
+            <div className="mx-auto">
                 <div className="flex justify-between mb-6">
                     <h1 className="text-2xl font-bold">Food Diary</h1>
                     <Button onClick={() => setShowAddForm(!showAddForm)}>
@@ -406,7 +409,7 @@ export function NutritionPage() {
                                         </Select>
                                     </div>
 
-                                    <div className="flex gap-2">
+                                    <div className="grid grid-cols-3 gap-3">
                                         <Button
                                             variant={showIngredients ? "default" : "outline"}
                                             onClick={() => { setShowIngredients(!showIngredients); setShowRecipes(false); setSearchTerm('') }}
@@ -443,10 +446,10 @@ export function NutritionPage() {
                                                 onChange={e => {
                                                     const qty = e.target.value
                                                     if (selectedIngredient) {
-                                                        if (newEntryForm.unit === "serving") updateQuantity(qty, true)
-                                                        else updateQuantity(qty, false)
+                                                        if (newEntryForm.unit === "serving") updateQuantity(qty, true, selectedIngredient)
+                                                        else updateQuantity(qty, false, selectedIngredient)
                                                     } else if (selectedRecipe) {
-                                                        updateQuantity(qty, false)
+                                                        updateQuantity(qty, false, selectedRecipe)
                                                     }
                                                 }}
                                                 className="w-24"

@@ -32,23 +32,22 @@ function parseNutritionText(input: string) {
     const text = input
         .toLowerCase()
         .replace(/,/g, ".")
-        .replace(/\s+/g, " ")
-
-    const findValue = (keywords: string[]): number | null => {
-        for (const kw of keywords) {
-            const regex = new RegExp(`${kw}[^\\d]*(\\d+(?:\\.\\d+)?)`, "i")
-            const match = text.match(regex)
-            if (match) return parseFloat(match[1])
+        .replace(/\s+/g, " ");
+    const findValue = (patterns: (string | RegExp)[]): number | null => {
+        for (const p of patterns) {
+            const regex = typeof p === "string" ? new RegExp(`${p}[^\\d]*(\\d+(?:\\.\\d+)?)`, "i") : p;
+            const match = text.match(regex);
+            if (match) return parseFloat(match[1]);
         }
-        return null
-    }
+        return null;
+    };
 
     return {
-        kcal: findValue(["(\\d+(?:[.,]\\d+)?)\\s*(?:kcal|cal)", "energia[^\\d]*(\\d+(?:[.,]\\d+)?)\\s*kcal"]),
-        protein: findValue(["\\bp\\b", "protein", "proteiini", "proteiinia"]),
-        carbs: findValue(["\\bc\\b", "carbs", "carb", "hiilihydraatit", "hiilihydraatti", "hiilihydraattia", "carbohydrates"]),
-        fat: findValue(["\\bf\\b", "rasva", "rasvaa", "fat", "fats"])
-    }
+        kcal: findValue([/\b(\d+(?:\.\d+)?)\s*(?:kcal|cal)\b/, /\bcalories[^0-9]*(\d+(?:\.\d+)?)/,]),
+        protein: findValue([/\bp\s*([0-9]+(?:\.\d+)?)/, /\bprotein[^0-9]*(\d+(?:\.\d+)?)/,]),
+        carbs: findValue([/\bc\s*([0-9]+(?:\.\d+)?)/, /\bcarb(?:s|ohydrates)?[^0-9]*(\d+(?:\.\d+)?)/, /\bhiilihydraat\w*[^0-9]*(\d+(?:\.\d+)?)/,]),
+        fat: findValue([/\bf\s*([0-9]+(?:\.\d+)?)/, /\bfat[^0-9]*(\d+(?:\.\d+)?)/, /\brasva\w*[^0-9]*(\d+(?:\.\d+)?)/,]),
+    };
 }
 
 export function IngredientList({
