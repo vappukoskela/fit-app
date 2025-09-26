@@ -16,15 +16,18 @@ router.post('/', async (req, res) => {
         recipe_id = null
     } = req.body;
 
+    console.log('Received log_date:', log_date, typeof log_date);
+
     try {
         await pool.query(
             `INSERT INTO food_diary (user_id, log_date, description, kcal, protein, carbs, fat, meal, recipe_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+             VALUES ($1, $2::date, $3, $4, $5, $6, $7, $8, $9)`,
             [user_id, log_date, description, kcal, protein, carbs, fat, meal, recipe_id]
         );
         res.status(201).json({ message: 'OK' });
     } catch (err) {
         console.error('Error inserting food entry:', err);
+        console.error('log_date value:', log_date);
         res.status(500).json({ error: 'Database error' });
     }
 });
@@ -32,8 +35,13 @@ router.post('/', async (req, res) => {
 router.get('/', async (_req, res) => {
     try {
         const result = await pool.query(
-            `SELECT * FROM food_diary
-       ORDER BY log_date DESC, id ASC`
+            `SELECT id, user_id, 
+                    log_date::text as log_date,
+                    recipe_id, meal, description, 
+                    kcal, protein, carbs, fat, 
+                    created_at, ingredient_id
+             FROM food_diary
+             ORDER BY log_date DESC, id ASC`
         );
         res.json(result.rows);
     } catch (err) {
@@ -46,9 +54,14 @@ router.get('/today/:user_id', async (req, res) => {
     const { user_id } = req.params;
     try {
         const result = await pool.query(
-            `SELECT * FROM food_diary
-       WHERE log_date = CURRENT_DATE AND user_id = $1
-       ORDER BY id ASC`,
+            `SELECT id, user_id, 
+                    log_date::text as log_date,
+                    recipe_id, meal, description, 
+                    kcal, protein, carbs, fat, 
+                    created_at, ingredient_id
+             FROM food_diary
+             WHERE log_date = CURRENT_DATE AND user_id = $1
+             ORDER BY id ASC`,
             [user_id]
         );
         res.json(result.rows);
@@ -71,16 +84,19 @@ router.put('/:id', async (req, res) => {
         recipe_id = null
     } = req.body;
 
+    console.log('Updating with log_date:', log_date, typeof log_date);
+
     try {
         await pool.query(
             `UPDATE food_diary
-       SET description=$1, kcal=$2, protein=$3, carbs=$4, fat=$5, meal=$6, log_date=$7, recipe_id=$8
-       WHERE id=$9`,
+             SET description=$1, kcal=$2, protein=$3, carbs=$4, fat=$5, meal=$6, log_date=$7::date, recipe_id=$8
+             WHERE id=$9`,
             [description, kcal, protein, carbs, fat, meal, log_date, recipe_id, id]
         );
         res.json({ message: 'OK' });
     } catch (err) {
         console.error('Error updating food entry:', err);
+        console.error('log_date value:', log_date);
         res.status(500).json({ error: 'Failed to update food entry' });
     }
 });

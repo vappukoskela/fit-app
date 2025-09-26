@@ -299,23 +299,49 @@ export function NutritionPage() {
 
     const handleEdit = (entry: FoodEntry) => {
         setEditingId(entry.id)
-        setEditForm(entry)
-    }
+        let dateOnly: string
 
+        if (entry.log_date.includes('T')) {
+            dateOnly = entry.log_date.split('T')[0]
+        } else {
+            dateOnly = entry.log_date
+        }
+
+        console.log('Converted to date only:', dateOnly)
+
+        setEditForm({
+            ...entry,
+            log_date: dateOnly
+        })
+    }
 
     const handleSaveEdit = async () => {
         if (!editingId || !editForm) return
-
         try {
+            const updateData = {
+                description: editForm.description,
+                kcal: Number(editForm.kcal),
+                protein: Number(editForm.protein),
+                carbs: Number(editForm.carbs),
+                fat: Number(editForm.fat),
+                meal: editForm.meal,
+                log_date: editForm.log_date,
+                recipe_id: editForm.recipe_id || null
+            }
+
+            console.log('Sending update data:', updateData)
+
             const response = await fetch(`http://localhost:4000/api/diary/${editingId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(editForm),
+                body: JSON.stringify(updateData),
             })
 
             if (!response.ok) {
+                const errorText = await response.text()
+                console.error('Server error response:', errorText)
                 throw new Error('Failed to update entry')
             }
 
@@ -323,6 +349,7 @@ export function NutritionPage() {
             setEditingId(null)
             setEditForm({})
         } catch (err) {
+            console.error('Save edit error:', err)
             setError(err instanceof Error ? err.message : 'Failed to update entry')
         }
     }
@@ -357,14 +384,16 @@ export function NutritionPage() {
 
     const groupedEntries = groupEntriesByDate(entries)
     const dateRange = generateDateRange()
+
     function normalizeDate(date: string | Date): string {
-        return new Date(date).toISOString().split("T")[0]; // "YYYY-MM-DD"
+        return getLocalDateString(new Date(date));
     }
 
     const allDates = Array.from(new Set([
         ...dateRange.map(normalizeDate),
         ...Object.keys(groupedEntries).map(normalizeDate),
     ])).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
 
     const selectiKaffe = (): void => {
         const iKaffeIngredient: Ingredient | undefined = ingredients.find(i => i.id === 34876)
