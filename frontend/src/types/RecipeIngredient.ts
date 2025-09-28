@@ -39,7 +39,7 @@ export interface RecipeIngredient {
     ingredient_id: number
     amount_g: number
     note: string | null
-    ingredient?: Ingredient
+    ingredient: Ingredient
 }
 
 export interface RawRecipeIngredient {
@@ -60,3 +60,9 @@ export interface RawRecipeIngredient {
     carbs_per_serving: string | null
     fat_per_serving: string | null
 }
+
+export interface RecipeBuilderIngredient {
+    ingredient: Ingredient
+    amount_g: string
+    note: string
+}   

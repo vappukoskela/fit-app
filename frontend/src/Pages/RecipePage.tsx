@@ -8,14 +8,8 @@ import { RecipeList } from '@/components/Lists/RecipeList'
 import { IngredientList } from '@/components/Lists/IngredientList'
 import { RecipeBuilder } from '@/components/RecipeBuilder'
 import { RecipeIngredientCard } from '@/components/Cards/Foods/RecipeIngredientCard'
-import type { Recipe, Ingredient } from '@/types/RecipeIngredient'
+import type { Recipe, Ingredient, RecipeBuilderIngredient } from '@/types/RecipeIngredient'
 import { LoadingPage } from '@/components/Loading'
-
-interface RecipeBuilderIngredient {
-    ingredient: Ingredient
-    amount_g: string
-    note: string
-}
 
 export function RecipePage() {
     const [searchTerm, setSearchTerm] = useState('')
@@ -73,36 +67,32 @@ export function RecipePage() {
         fetchIngredients()
     }
 
-    const handleIngredientUpdate = () => {
-        fetchIngredients()
-    }
-
     const handleAddIngredientInRecipe = (ingredient: Ingredient) => {
-        const isAdded = recipeIngredients.some(ri => ri.ingredient.id === ingredient.id)
-        if (isAdded) {
+        const exists = recipeIngredients.some(ri => ri.ingredient.id === ingredient.id)
+        if (exists) {
             setRecipeIngredients(prev => prev.filter(ri => ri.ingredient.id !== ingredient.id))
         } else {
-            setRecipeIngredients(prev => [...prev, {
-                ingredient,
-                amount_g: '100',
-                note: ''
-            }])
+            setRecipeIngredients(prev => [...prev, { ingredient, amount_g: '100', note: '' }])
         }
     }
 
-    const filteredIngredients = ingredients.filter(ingredient =>
-        ingredient.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-
-    const filteredRecipes = recipes.filter(recipe =>
-        recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-
-    if (loading) {
-        return (
-           <LoadingPage />
-        )
+    const handleUpdateIngredient = (index: number, field: 'amount_g' | 'note', value: string) => {
+        setRecipeIngredients(prev => prev.map((ri, i) => i === index ? { ...ri, [field]: value } : ri))
     }
+
+    const handleRemoveIngredient = (index: number) => {
+        setRecipeIngredients(prev => prev.filter((_, i) => i !== index))
+    }
+
+    const handleSaveSuccess = () => {
+        handleRecipeUpdate()
+        handleRecipeBuilderClose()
+    }
+
+    const filteredIngredients = ingredients.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredRecipes = recipes.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
+    if (loading) return <LoadingPage />
 
     return (
         <div className="min-h-screen bg-background text-foreground p-6">
@@ -111,22 +101,18 @@ export function RecipePage() {
 
                 {error && (
                     <Card className="mb-6 border-destructive">
-                        <CardContent className="p-4">
-                            <div className="text-destructive">{error}</div>
-                        </CardContent>
+                        <CardContent className="p-4 text-destructive">{error}</CardContent>
                     </Card>
                 )}
 
-                <div className="mb-6">
-                    <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search ingredients and recipes..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
+                <div className="mb-6 relative max-w-md">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search ingredients and recipes..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                    />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -134,18 +120,17 @@ export function RecipePage() {
                         {isBuilding && selectedRecipe ? (
                             <RecipeBuilder
                                 recipe={selectedRecipe}
-                                onClose={handleRecipeBuilderClose}
-                                onUpdate={handleRecipeUpdate}
-                                fetchRecipeIngredients={fetchRecipeIngredients}
-                                onToggleIngredient={handleAddIngredientInRecipe}
                                 recipeIngredients={recipeIngredients}
+                                onUpdateIngredient={handleUpdateIngredient}
+                                onRemoveIngredient={handleRemoveIngredient}
+                                onClose={handleRecipeBuilderClose}
+                                onSaveSuccess={handleSaveSuccess}
                             />
                         ) : (
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
-                                        <ChefHat className="h-5 w-5" />
-                                        Recipes
+                                        <ChefHat className="h-5 w-5" /> Recipes
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -177,11 +162,11 @@ export function RecipePage() {
                             <CardContent>
                                 {isBuilding ? (
                                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                                        {filteredIngredients.map(ingredient => (
+                                        {filteredIngredients.map(i => (
                                             <RecipeIngredientCard
-                                                key={ingredient.id}
-                                                ingredient={ingredient}
-                                                isAdded={recipeIngredients.some(ri => ri.ingredient.id === ingredient.id)}
+                                                key={i.id}
+                                                ingredient={i}
+                                                isAdded={recipeIngredients.some(ri => ri.ingredient.id === i.id)}
                                                 onAdd={handleAddIngredientInRecipe}
                                             />
                                         ))}
@@ -194,7 +179,7 @@ export function RecipePage() {
                                         ingredients={filteredIngredients}
                                         favourites={ingredientFavourites}
                                         onToggleFavourite={toggleIngredientFavourite}
-                                        onIngredientUpdate={handleIngredientUpdate}
+                                        onIngredientUpdate={fetchIngredients}
                                         isRecipeBuilding={false}
                                     />
                                 )}

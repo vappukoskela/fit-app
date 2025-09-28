@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react'
-import type { Ingredient } from '@/types/RecipeIngredient'
+import { useReducer, useEffect } from "react"
+import {
+    ingredientsReducer,
+    initialIngredientsState,
+} from "@/reducers/ingredientsReducer"
+import type { Ingredient } from "@/types/RecipeIngredient"
 
 export const useIngredients = () => {
-    const [ingredients, setIngredients] = useState<Ingredient[]>([])
-    const [ingredientFavourites, setIngredientFavourites] = useState<number[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const [state, dispatch] = useReducer(
+        ingredientsReducer,
+        initialIngredientsState
+    )
 
     useEffect(() => {
         fetchIngredients()
@@ -14,24 +18,27 @@ export const useIngredients = () => {
 
     const fetchIngredients = async () => {
         try {
-            setLoading(true)
-            const res = await fetch('http://localhost:4000/api/ingredients')
-            if (!res.ok) throw new Error('Failed to fetch ingredients')
+            dispatch({ type: "FETCH_START" })
+            const res = await fetch("http://localhost:4000/api/ingredients")
+            if (!res.ok) throw new Error("Failed to fetch ingredients")
             const data: Ingredient[] = await res.json()
-            setIngredients(data)
+            dispatch({ type: "FETCH_SUCCESS", payload: data })
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error')
-        } finally {
-            setLoading(false)
+            dispatch({
+                type: "FETCH_ERROR",
+                payload: err instanceof Error ? err.message : "Unknown error",
+            })
         }
     }
 
     const fetchIngredientFavourites = async () => {
         try {
-            const res = await fetch('http://localhost:4000/api/ingredients/favorites')
-            if (!res.ok) throw new Error('Failed to fetch ingredient favourites')
+            const res = await fetch(
+                "http://localhost:4000/api/ingredients/favorites"
+            )
+            if (!res.ok) throw new Error("Failed to fetch ingredient favourites")
             const data: number[] = await res.json()
-            setIngredientFavourites(data)
+            dispatch({ type: "FAVOURITES_SUCCESS", payload: data })
         } catch (err) {
             console.error(err)
         }
@@ -39,26 +46,28 @@ export const useIngredients = () => {
 
     const toggleIngredientFavourite = async (ingredientId: number) => {
         try {
-            if (ingredientFavourites.includes(ingredientId)) {
-                const res = await fetch(`http://localhost:4000/api/ingredients/${ingredientId}/favorite`, { method: 'DELETE' })
-                if (!res.ok) throw new Error('Failed to remove favourite')
-                setIngredientFavourites(prev => prev.filter(id => id !== ingredientId))
+            if (state.ingredientFavourites.includes(ingredientId)) {
+                const res = await fetch(
+                    `http://localhost:4000/api/ingredients/${ingredientId}/favorite`,
+                    { method: "DELETE" }
+                )
+                if (!res.ok) throw new Error("Failed to remove favourite")
             } else {
-                const res = await fetch(`http://localhost:4000/api/ingredients/${ingredientId}/favorite`, { method: 'POST' })
-                if (!res.ok) throw new Error('Failed to add favourite')
-                setIngredientFavourites(prev => [...prev, ingredientId])
+                const res = await fetch(
+                    `http://localhost:4000/api/ingredients/${ingredientId}/favorite`,
+                    { method: "POST" }
+                )
+                if (!res.ok) throw new Error("Failed to add favourite")
             }
+            dispatch({ type: "TOGGLE_FAVOURITE", payload: ingredientId })
         } catch (err) {
             console.error(err)
         }
     }
 
     return {
-        ingredients,
-        ingredientFavourites,
-        loading,
-        error,
+        ...state,
         fetchIngredients,
-        toggleIngredientFavourite
+        toggleIngredientFavourite,
     }
 }
