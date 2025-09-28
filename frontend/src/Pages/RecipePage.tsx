@@ -8,7 +8,7 @@ import { RecipeList } from '@/components/Lists/RecipeList'
 import { IngredientList } from '@/components/Lists/IngredientList'
 import { RecipeBuilder } from '@/components/RecipeBuilder'
 import { RecipeIngredientCard } from '@/components/Cards/Foods/RecipeIngredientCard'
-import type { Recipe, Ingredient, RecipeBuilderIngredient } from '@/types/RecipeIngredient'
+import type { Recipe, Ingredient, RecipeBuilderIngredient } from '@/types/recipeIngredientTypes'
 import { LoadingPage } from '@/components/Loading'
 
 export function RecipePage() {

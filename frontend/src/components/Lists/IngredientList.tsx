@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Save, X, Wand2 } from 'lucide-react'
 import { IngredientCard } from '@/components/Cards/Foods/IngredientCard'
-import type { Ingredient } from '@/types/RecipeIngredient'
+import type { Ingredient } from '@/types/recipeIngredientTypes'
 
 interface IngredientForm {
     name: string

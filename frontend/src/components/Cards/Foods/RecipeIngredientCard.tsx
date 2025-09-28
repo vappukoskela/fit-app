@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
-import type { Ingredient } from "@/types/RecipeIngredient";    
+import type { Ingredient } from "@/types/recipeIngredientTypes";    
 
 interface RecipeIngredientCardProps {
     ingredient: Ingredient;

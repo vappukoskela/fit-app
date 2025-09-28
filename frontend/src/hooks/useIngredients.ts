@@ -3,7 +3,7 @@ import {
     ingredientsReducer,
     initialIngredientsState,
 } from "@/reducers/ingredientsReducer"
-import type { Ingredient } from "@/types/RecipeIngredient"
+import type { Ingredient } from "@/types/recipeIngredientTypes"
 
 export const useIngredients = () => {
     const [state, dispatch] = useReducer(

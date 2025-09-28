@@ -1,4 +1,4 @@
-import type { Ingredient } from "@/types/RecipeIngredient"
+import type { Ingredient } from "@/types/recipeIngredientTypes"
 
 export type IngredientsState = {
   ingredients: Ingredient[]

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Plus, Edit2, Save, X, Trash2, ChefHat, Star } from 'lucide-react'
-import type { Recipe } from '@/types/RecipeIngredient'
+import type { Recipe } from '@/types/recipeIngredientTypes'
 
 interface RecipeForm {
     name: string

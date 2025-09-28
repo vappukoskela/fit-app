@@ -3,7 +3,7 @@ import {
   recipesReducer,
   initialRecipesState,
 } from "@/reducers/recipesReducer"
-import type { Recipe, RawRecipeIngredient } from "@/types/RecipeIngredient"
+import type { Recipe, RawRecipeIngredient } from "@/types/recipeIngredientTypes"
 
 export const useRecipes = () => {
   const [state, dispatch] = useReducer(recipesReducer, initialRecipesState)
