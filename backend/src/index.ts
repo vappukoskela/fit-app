@@ -5,6 +5,7 @@ import diaryRoutes from './routes/fooddiary';
 import weightRoutes from './routes/weights';
 import ingredientRoutes from './routes/ingredients';
 import recipeRoutes from './routes/recipes';
+import userRoutes from './routes/user';
 
 const app = express();
 app.use(cors());
@@ -15,6 +16,7 @@ app.use('/api/diary', diaryRoutes)
 app.use('/api/weights', weightRoutes)
 app.use('/api/ingredients', ingredientRoutes)
 app.use('/api/recipes', recipeRoutes)
+app.use('/api/users', userRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
