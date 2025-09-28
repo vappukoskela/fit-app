@@ -29,7 +29,7 @@ export const RecipeBuilder = ({
 }: RecipeBuilderProps) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
+    const [showDebug, setShowDebug] = useState(false)
     const saveRecipeIngredients = async () => {
         setLoading(true)
         setError(null)
@@ -193,6 +193,19 @@ export const RecipeBuilder = ({
                             </Button>
                         </div>
                     </>
+                )}
+                <Button
+                    variant="ghost"
+                    onClick={() => setShowDebug((prev) => !prev)}
+                    className="text-xs"
+                >
+                    {showDebug ? "Hide Debug" : "Show Debug"}
+                </Button>
+                {showDebug && (
+                    <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-900 rounded text-xs overflow-x-auto max-h-64 overflow-y-auto">
+                        <strong>Debug State</strong>
+                        <pre>{JSON.stringify({ recipe, recipeIngredients }, null, 2)}</pre>
+                    </div>
                 )}
             </CardContent>
         </Card>
