@@ -20,6 +20,7 @@ function App() {
             <Route path="nutrition" element={<NutritionPage />} />
             <Route path="activity" element={<ActivityPage />} />
             <Route path="recipes" element={<RecipePage />} />
+            <Route path="*" element={<div className='m-4 text-2xl font-bold flex flex-col justify-center items-center min-h-96'>404 Not Found</div>} />
           </Route>
         </Routes>
       </BrowserRouter>
