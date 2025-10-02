@@ -359,10 +359,11 @@ export default function UserProfilePage() {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Button onClick={() => dispatch({ type: "START_EDIT" })} variant="outline">
+                                <Button onClick={() => { window.location.href = "http://localhost:4000/api/auth/polar/connect"; }} variant="outline">
                                     <Activity className="h-5 w-5 text-red-600" />
-                                    Connect to Polar (coming soon)
+                                    Connect to Polar
                                 </Button>
+
                                 <Button onClick={() => dispatch({ type: "START_EDIT" })} variant="outline">
                                     <Activity className="h-5 w-5 text-orange-400" />
                                     Connect to Strava (coming soon)

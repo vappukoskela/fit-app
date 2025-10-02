@@ -6,6 +6,7 @@ import weightRoutes from './routes/weights';
 import ingredientRoutes from './routes/ingredients';
 import recipeRoutes from './routes/recipes';
 import userRoutes from './routes/user';
+import authRoutes from './routes/auth';
 
 const app = express();
 app.use(cors());
@@ -17,6 +18,7 @@ app.use('/api/weights', weightRoutes)
 app.use('/api/ingredients', ingredientRoutes)
 app.use('/api/recipes', recipeRoutes)
 app.use('/api/users', userRoutes);
+app.use('/api/auth/', authRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
