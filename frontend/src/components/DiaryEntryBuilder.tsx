@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Save, X } from 'lucide-react'
-import type { Ingredient, Recipe } from '@/types/RecipeIngredient'
+import type { Ingredient, Recipe } from '@/types/recipeIngredientTypes'
 
 interface DiaryEntryBuilderProps {
     onClose: () => void

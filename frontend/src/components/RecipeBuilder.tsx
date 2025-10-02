@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import type { Recipe, Ingredient } from "@/types/RecipeIngredient"
+import type { Recipe, Ingredient } from "@/types/recipeIngredientTypes"
 import { Save, Trash2 } from "lucide-react"
 import { LoadingPage } from "./Loading"
 import { Input } from "./ui/input"

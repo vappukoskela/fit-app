@@ -1,5 +1,4 @@
 'use client';
-
 import { useNavigate } from "react-router-dom";
 import { Button } from './ui/button';
 import {
@@ -16,7 +15,6 @@ import {
 import { cn } from '../lib/utils';
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 
-// Simple cat avatar SVG - you can replace this with any cat SVG
 const Avatar = (props: React.SVGAttributes<SVGElement>) => {
     return (
         <svg
@@ -47,7 +45,6 @@ const Avatar = (props: React.SVGAttributes<SVGElement>) => {
     );
 };
 
-// Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
     return (
         <svg width='1em' height='1em' viewBox='0 0 324 323' fill='currentColor' xmlns='http://www.w3.org/2000/svg' {...props}>
@@ -73,7 +70,6 @@ const Logo = (props: React.SVGAttributes<SVGElement>) => {
     );
 };
 
-// Hamburger icon component
 const HamburgerIcon = ({ className, ...props }: React.SVGAttributes<SVGElement>) => (
     <svg
         className={cn('pointer-events-none', className)}
@@ -103,7 +99,6 @@ const HamburgerIcon = ({ className, ...props }: React.SVGAttributes<SVGElement>)
     </svg>
 );
 
-// Types
 export interface HeaderNavItem {
     href?: string;
     label: string;
@@ -124,11 +119,10 @@ export interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
     userAvatar?: React.ReactNode;
 }
 
-// Default navigation links
 const defaultNavigationLinks: HeaderNavItem[] = [
     { href: '/', label: 'Home' },
     { href: '/nutrition', label: 'Nutrition' },
-    { href: '/recipes', label: 'Recipes' }, 
+    { href: '/recipes', label: 'Recipes' },
     { href: '/activity', label: 'Activity' },
     { href: '/weight', label: 'Weight' },
 ];
@@ -152,7 +146,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
             const checkWidth = () => {
                 if (containerRef.current) {
                     const width = containerRef.current.offsetWidth;
-                    setIsMobile(width < 768); // 768px is md breakpoint
+                    setIsMobile(width < 768);
                 }
             };
 
@@ -168,7 +162,6 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
             };
         }, []);
 
-        // Combine refs
         const combinedRef = useCallback((node: HTMLElement | null) => {
             containerRef.current = node;
             if (typeof ref === 'function') {
@@ -192,9 +185,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
                 {...props}
             >
                 <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between gap-4">
-                    {/* Left side */}
                     <div className="flex items-center gap-2">
-                        {/* Mobile menu trigger */}
                         {isMobile && (
                             <Popover>
                                 <PopoverTrigger asChild>
@@ -224,7 +215,6 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
                                 </PopoverContent>
                             </Popover>
                         )}
-                        {/* Main nav */}
                         <div className="flex items-center gap-6">
                             <button
                                 onClick={() => navigate("/")}
@@ -235,7 +225,6 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
                                 </div>
                                 <span className="hidden font-bold text-xl sm:inline-block">fit-app</span>
                             </button>
-                            {/* Navigation menu */}
                             {!isMobile && (
                                 <NavigationMenu className="flex">
                                     <NavigationMenuList className="gap-1">
@@ -244,7 +233,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
                                                 <button
                                                     onClick={() => handleNavigation(link.href || '/')}
                                                     className={cn(
-                                                        navigationMenuTriggerStyle(), 
+                                                        navigationMenuTriggerStyle(),
                                                         'cursor-pointer bg-transparent border-0 hover:bg-accent hover:text-accent-foreground'
                                                     )}
                                                 >
@@ -257,7 +246,6 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
                             )}
                         </div>
                     </div>
-                    {/* Avatar */}
                     <div className="flex items-center">
                         <Button
                             variant="ghost"
