@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Apple, ChefHat, Search, Edit2, Save, X, Trash2, Coffee } from 'lucide-react'
+import { Plus, Search, Edit2, Save, X, Trash2, Apple, ChefHat } from 'lucide-react'
 import { LoadingPage } from '@/components/Loading'
+import { DiaryEntryBuilder } from '@/components/DiaryEntryBuilder'
+import type { Ingredient, Recipe } from '@/types/recipeIngredientTypes'
 
 interface FoodEntry {
     id: number
@@ -21,44 +21,6 @@ interface FoodEntry {
     fat: number
     created_at: string
 }
-
-export interface Ingredient {
-    id: number
-    name: string
-    kcal_per_100g: number
-    protein_per_100g: number
-    carbs_per_100g: number
-    fat_per_100g: number
-    serving_size_g: number | null
-    serving_description: string | null
-}
-
-export interface Recipe {
-    id: number
-    name: string
-    description: string | null
-    servings: number
-    total_kcal?: number
-    total_protein?: number
-    total_carbs?: number
-    total_fat?: number
-}
-
-interface NewEntryForm {
-    log_date: string
-    meal: string
-    description: string
-    kcal: string
-    protein: string
-    carbs: string
-    fat: string
-    quantity: string
-    unit: 'g' | 'serving'
-}
-
-type EntryItem = Ingredient | Recipe;
-
-const MEAL_OPTIONS = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Other']
 
 export function NutritionPage() {
     const [entries, setEntries] = useState<FoodEntry[]>([])
@@ -80,18 +42,6 @@ export function NutritionPage() {
     function getLocalDateString(date: Date): string {
         return date.toLocaleDateString('en-CA')
     }
-
-    const [newEntryForm, setNewEntryForm] = useState<NewEntryForm>({
-        log_date: getLocalDateString(new Date()),
-        meal: '',
-        description: '',
-        kcal: '',
-        protein: '',
-        carbs: '',
-        fat: '',
-        quantity: '100',
-        unit: 'g'
-    })
 
     useEffect(() => {
         fetchData()
@@ -125,6 +75,7 @@ export function NutritionPage() {
             setLoading(false)
         }
     }
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
         return new Intl.DateTimeFormat('en-US', {
@@ -146,16 +97,16 @@ export function NutritionPage() {
     }
 
     const groupEntriesByDate = (entries: FoodEntry[]) => {
-        const grouped: { [key: string]: FoodEntry[] } = {};
+        const grouped: { [key: string]: FoodEntry[] } = {}
         entries.forEach(entry => {
-            const date = getLocalDateString(new Date(entry.log_date)); // local YYYY-MM-DD
+            const date = getLocalDateString(new Date(entry.log_date))
             if (!grouped[date]) {
-                grouped[date] = [];
+                grouped[date] = []
             }
-            grouped[date].push(entry);
-        });
-        return grouped;
-    };
+            grouped[date].push(entry)
+        })
+        return grouped
+    }
 
     const generateDateRange = () => {
         const dates = []
@@ -181,133 +132,24 @@ export function NutritionPage() {
         )
     }
 
-
-    const calculateNutritionFromIngredient = (ingredient: Ingredient, grams: number) => {
-        const factor = grams / 100
-        return {
-            kcal: ingredient.kcal_per_100g * factor,
-            protein: ingredient.protein_per_100g * factor,
-            carbs: ingredient.carbs_per_100g * factor,
-            fat: ingredient.fat_per_100g * factor
-        }
-    }
-
-    const calculateNutritionFromRecipe = (recipe: Recipe, servings: number) => {
-        return {
-            kcal: (recipe.total_kcal || 0) * servings / recipe.servings,
-            protein: (recipe.total_protein || 0) * servings / recipe.servings,
-            carbs: (recipe.total_carbs || 0) * servings / recipe.servings,
-            fat: (recipe.total_fat || 0) * servings / recipe.servings
-        }
-    }
-
-    const selectIngredient = (ingredient: Ingredient) => {
-        setSelectedIngredient(ingredient)
-        setSelectedRecipe(null)
-
-        const grams = ingredient.serving_size_g || 100
-        const nutrition = calculateNutritionFromIngredient(ingredient, grams)
-
-        setNewEntryForm(prev => ({
-            ...prev,
-            description: ingredient.name,
-            quantity: grams.toString(),
-            kcal: nutrition.kcal.toFixed(1),
-            protein: nutrition.protein.toFixed(1),
-            carbs: nutrition.carbs.toFixed(1),
-            fat: nutrition.fat.toFixed(1),
-            unit: 'g'
-        }))
-    }
-
-    const selectRecipe = (recipe: Recipe) => {
-        setSelectedRecipe(recipe)
+    const handleCloseBuilder = () => {
+        setShowAddForm(false)
         setSelectedIngredient(null)
-
-        const nutrition = calculateNutritionFromRecipe(recipe, 1)
-
-        setNewEntryForm(prev => ({
-            ...prev,
-            description: recipe.name,
-            quantity: '1',
-            kcal: nutrition.kcal.toFixed(1),
-            protein: nutrition.protein.toFixed(1),
-            carbs: nutrition.carbs.toFixed(1),
-            fat: nutrition.fat.toFixed(1),
-            unit: 'serving'
-        }))
+        setSelectedRecipe(null)
+        setShowIngredients(false)
+        setShowRecipes(false)
+        setSearchTerm('')
     }
 
-    const updateQuantity = (quantity: string, isServing = false, item?: EntryItem) => {
-        if (!item) return;
-
-        const qty = parseFloat(quantity) || 0;
-        const isIngredient = (i: EntryItem): i is Ingredient => 'serving_size_g' in i;
-
-        if (isIngredient(item)) {
-            const grams = isServing ? qty * (item.serving_size_g || 0) : qty;
-            const nutrition = calculateNutritionFromIngredient(item, grams);
-            setNewEntryForm(prev => ({
-                ...prev,
-                quantity: isServing ? qty.toString() : grams.toString(),
-                kcal: nutrition.kcal.toFixed(1),
-                protein: nutrition.protein.toFixed(1),
-                carbs: nutrition.carbs.toFixed(1),
-                fat: nutrition.fat.toFixed(1)
-            }));
-        } else {
-            const nutrition = calculateNutritionFromRecipe(item, qty);
-            setNewEntryForm(prev => ({
-                ...prev,
-                quantity: qty.toString(),
-                kcal: nutrition.kcal.toFixed(1),
-                protein: nutrition.protein.toFixed(1),
-                carbs: nutrition.carbs.toFixed(1),
-                fat: nutrition.fat.toFixed(1)
-            }));
-        }
-    };
-
-
-    const handleAddEntry = async () => {
-        try {
-            const response = await fetch('http://localhost:4000/api/diary', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: 1,
-                    recipe_id: selectedRecipe?.id || null,
-                    ...newEntryForm,
-                    kcal: Number(newEntryForm.kcal) || 0,
-                    protein: Number(newEntryForm.protein) || 0,
-                    carbs: Number(newEntryForm.carbs) || 0,
-                    fat: Number(newEntryForm.fat) || 0,
-                    portion_size: Number(newEntryForm.quantity) || 1
-                })
-            })
-
-            if (!response.ok) throw new Error('Failed to add entry')
-
-            await fetchData()
-            setShowAddForm(false)
-            setSelectedIngredient(null)
-            setSelectedRecipe(null)
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to add entry')
-        }
+    const handleSaveEntry = () => {
+        fetchData()
     }
 
     const handleEdit = (entry: FoodEntry) => {
         setEditingId(entry.id)
-        let dateOnly: string
-
-        if (entry.log_date.includes('T')) {
-            dateOnly = entry.log_date.split('T')[0]
-        } else {
-            dateOnly = entry.log_date
-        }
-
-        console.log('Converted to date only:', dateOnly)
+        const dateOnly = entry.log_date.includes('T')
+            ? entry.log_date.split('T')[0]
+            : entry.log_date
 
         setEditForm({
             ...entry,
@@ -329,8 +171,6 @@ export function NutritionPage() {
                 recipe_id: editForm.recipe_id || null
             }
 
-            console.log('Sending update data:', updateData)
-
             const response = await fetch(`http://localhost:4000/api/diary/${editingId}`, {
                 method: 'PUT',
                 headers: {
@@ -340,8 +180,6 @@ export function NutritionPage() {
             })
 
             if (!response.ok) {
-                const errorText = await response.text()
-                console.error('Server error response:', errorText)
                 throw new Error('Failed to update entry')
             }
 
@@ -349,7 +187,6 @@ export function NutritionPage() {
             setEditingId(null)
             setEditForm({})
         } catch (err) {
-            console.error('Save edit error:', err)
             setError(err instanceof Error ? err.message : 'Failed to update entry')
         }
     }
@@ -372,6 +209,16 @@ export function NutritionPage() {
         }
     }
 
+    const selectIngredient = (ingredient: Ingredient) => {
+        setSelectedIngredient(ingredient)
+        setSelectedRecipe(null)
+    }
+
+    const selectRecipe = (recipe: Recipe) => {
+        setSelectedRecipe(recipe)
+        setSelectedIngredient(null)
+    }
+
     if (loading) return <LoadingPage message="Loading food diary..." />
     if (error) return <div className="p-6 text-destructive">Error: {error}</div>
 
@@ -385,25 +232,14 @@ export function NutritionPage() {
     const groupedEntries = groupEntriesByDate(entries)
     const dateRange = generateDateRange()
 
-    function normalizeDate(date: string | Date): string {
-        return getLocalDateString(new Date(date));
+    const normalizeDate = (date: string | Date): string => {
+        return getLocalDateString(new Date(date))
     }
 
     const allDates = Array.from(new Set([
         ...dateRange.map(normalizeDate),
         ...Object.keys(groupedEntries).map(normalizeDate),
-    ])).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-
-
-    const selectiKaffe = (): void => {
-        const iKaffeIngredient: Ingredient | undefined = ingredients.find(i => i.id === 34876)
-        if (iKaffeIngredient) {
-            selectIngredient(iKaffeIngredient);
-            updateQuantity("200", false, iKaffeIngredient);
-        } else {
-            setError("404 iKaffe not found :(");
-        }
-    }
+    ])).sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 
     return (
         <div className="min-h-screen bg-background text-foreground p-6">
@@ -419,108 +255,106 @@ export function NutritionPage() {
                     <Card className="mb-6">
                         <CardContent className="p-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <DiaryEntryBuilder
+                                        onClose={handleCloseBuilder}
+                                        onSave={handleSaveEntry}
+                                        selectedIngredient={selectedIngredient}
+                                        selectedRecipe={selectedRecipe}
+                                    />
+                                </div>
                                 <div className="space-y-4">
-                                    <h3 className="font-semibold">Add Food Entry</h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <Input
-                                            type="date"
-                                            value={newEntryForm.log_date}
-                                            onChange={e => setNewEntryForm(p => ({ ...p, log_date: e.target.value }))}
-                                        />
-                                        <Select
-                                            value={newEntryForm.meal}
-                                            onValueChange={meal => setNewEntryForm(p => ({ ...p, meal }))}
-                                        >
-                                            <SelectTrigger><SelectValue placeholder="Meal" /></SelectTrigger>
-                                            <SelectContent>
-                                                {MEAL_OPTIONS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-3">
+                                    <div className="flex gap-2">
                                         <Button
                                             variant={showIngredients ? "default" : "outline"}
-                                            onClick={() => { setShowIngredients(!showIngredients); setShowRecipes(false); setSearchTerm('') }}
+                                            onClick={() => {
+                                                setShowIngredients(!showIngredients)
+                                                setShowRecipes(false)
+                                                setSearchTerm('')
+                                            }}
+                                            className="flex-1"
                                         >
-                                            <Apple className="h-4 w-4 mr-2" /> Add Ingredient
+                                            <Apple className="h-4 w-4 mr-2" />
+                                            Ingredients
                                         </Button>
                                         <Button
                                             variant={showRecipes ? "default" : "outline"}
-                                            onClick={() => { setShowRecipes(!showRecipes); setShowIngredients(false); setSearchTerm('') }}
+                                            onClick={() => {
+                                                setShowRecipes(!showRecipes)
+                                                setShowIngredients(false)
+                                                setSearchTerm('')
+                                            }}
+                                            className="flex-1"
                                         >
-                                            <ChefHat className="h-4 w-4 mr-2" /> Add Recipe
+                                            <ChefHat className="h-4 w-4 mr-2" />
+                                            Recipes
                                         </Button>
-                                        {newEntryForm.meal === 'Breakfast' && (
-                                            <Button
-                                                variant={"outline"}
-                                                onClick={() => selectiKaffe()}
-                                            >
-                                                <Coffee className="h-4 w-4 mr-2" /> Oatly iKaffe
-                                            </Button>
-                                        )}
                                     </div>
 
-                                    <Textarea
-                                        placeholder="Food description"
-                                        value={newEntryForm.description}
-                                        onChange={e => setNewEntryForm(p => ({ ...p, description: e.target.value }))}
-                                    />
-
-                                    {(selectedIngredient || selectedRecipe) && (
-                                        <div className="space-y-3 bg-muted/50 p-3 rounded-lg">
-                                            <Input
-                                                type="number"
-                                                value={newEntryForm.quantity}
-                                                onChange={e => {
-                                                    const qty = e.target.value
-                                                    if (selectedIngredient) {
-                                                        if (newEntryForm.unit === "serving") updateQuantity(qty, true, selectedIngredient)
-                                                        else updateQuantity(qty, false, selectedIngredient)
-                                                    } else if (selectedRecipe) {
-                                                        updateQuantity(qty, false, selectedRecipe)
-                                                    }
-                                                }}
-                                                className="w-24"
-                                            />
-                                            <div className="text-sm">
-                                                {newEntryForm.kcal} kcal | P {newEntryForm.protein}g | C {newEntryForm.carbs}g | F {newEntryForm.fat}g
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex gap-2">
-                                        <Button onClick={handleAddEntry}>Save</Button>
-                                        <Button variant="outline" onClick={() => setShowAddForm(false)}>Cancel</Button>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
                                     {(showIngredients || showRecipes) && (
                                         <>
                                             <div className="flex items-center gap-2">
-                                                <Search className="h-4 w-4" />
+                                                <Search className="h-4 w-4 text-muted-foreground" />
                                                 <Input
-                                                    placeholder="Search..."
+                                                    placeholder={`Search ${showIngredients ? 'ingredients' : 'recipes'}...`}
                                                     value={searchTerm}
                                                     onChange={e => setSearchTerm(e.target.value)}
                                                 />
                                             </div>
-                                            <div className="max-h-72 overflow-y-auto space-y-2">
-                                                {showIngredients && filteredIngredients.map(i => (
-                                                    <Card key={i.id} className="p-2 cursor-pointer hover:bg-muted"
-                                                        onClick={() => selectIngredient(i)}>
-                                                        {i.name}
+                                            <div className="max-h-96 overflow-y-auto space-y-2 border rounded-lg p-2">
+                                                {showIngredients && filteredIngredients.map(ingredient => (
+                                                    <Card
+                                                        key={ingredient.id}
+                                                        className={`p-3 cursor-pointer transition-colors ${selectedIngredient?.id === ingredient.id
+                                                                ? 'bg-purple-100 dark:bg-purple-900 border-purple-300 dark:border-purple-700'
+                                                                : 'hover:bg-muted'
+                                                            }`}
+                                                        onClick={() => selectIngredient(ingredient)}
+                                                    >
+                                                        <div className="font-medium">{ingredient.name}</div>
+                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                            {ingredient.kcal_per_100g} kcal/100g
+                                                            {ingredient.serving_size_g && ` • ${ingredient.serving_size_g}g serving`}
+                                                        </div>
                                                     </Card>
                                                 ))}
-                                                {showRecipes && filteredRecipes.map(r => (
-                                                    <Card key={r.id} className="p-2 cursor-pointer hover:bg-muted"
-                                                        onClick={() => selectRecipe(r)}>
-                                                        {r.name}
+                                                {showRecipes && filteredRecipes.map(recipe => (
+                                                    <Card
+                                                        key={recipe.id}
+                                                        className={`p-3 cursor-pointer transition-colors ${selectedRecipe?.id === recipe.id
+                                                                ? 'bg-purple-100 dark:bg-purple-900 border-purple-300 dark:border-purple-700'
+                                                                : 'hover:bg-muted'
+                                                            }`}
+                                                        onClick={() => selectRecipe(recipe)}
+                                                    >
+                                                        <div className="font-medium">{recipe.name}</div>
+                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                            {recipe.servings} servings
+                                                            {recipe.description && ` • ${recipe.description}`}
+                                                        </div>
                                                     </Card>
                                                 ))}
+                                                {showIngredients && filteredIngredients.length === 0 && (
+                                                    <div className="text-center text-muted-foreground py-8">
+                                                        No ingredients found
+                                                    </div>
+                                                )}
+                                                {showRecipes && filteredRecipes.length === 0 && (
+                                                    <div className="text-center text-muted-foreground py-8">
+                                                        No recipes found
+                                                    </div>
+                                                )}
                                             </div>
                                         </>
+                                    )}
+
+                                    {!showIngredients && !showRecipes && (
+                                        <div className="flex items-center justify-center h-96 text-muted-foreground">
+                                            <div className="text-center">
+                                                <p className="mb-2">Select ingredients or recipes to add to your diary</p>
+                                                <p className="text-sm">Click the buttons above to browse</p>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -528,6 +362,7 @@ export function NutritionPage() {
                     </Card>
                 )}
             </div>
+
             <div className="max-w-2xl mx-auto space-y-6">
                 {allDates.map(date => {
                     const dayEntries = groupedEntries[date] || []
@@ -561,63 +396,48 @@ export function NutritionPage() {
                                 <Card key={entry.id} className="hover:shadow-md transition-shadow">
                                     <CardContent className="p-4">
                                         {editingId === entry.id ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-3">
-                                                    <Select
-                                                        value={editForm.meal || ''}
-                                                        onValueChange={(value) => setEditForm(prev => ({ ...prev, meal: value }))}
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {MEAL_OPTIONS.map(meal => (
-                                                                <SelectItem key={meal} value={meal}>{meal}</SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <Textarea
-                                                        value={editForm.description || ''}
-                                                        onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
-                                                        className="min-h-20"
+                                            <div className="space-y-3">
+                                                <div className="text-sm text-muted-foreground">
+                                                    Editing mode - update values manually
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Calories"
+                                                        value={editForm.kcal || ''}
+                                                        onChange={(e) => setEditForm(prev => ({ ...prev, kcal: Number(e.target.value) }))}
+                                                    />
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Protein (g)"
+                                                        value={editForm.protein || ''}
+                                                        onChange={(e) => setEditForm(prev => ({ ...prev, protein: Number(e.target.value) }))}
+                                                    />
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Carbs (g)"
+                                                        value={editForm.carbs || ''}
+                                                        onChange={(e) => setEditForm(prev => ({ ...prev, carbs: Number(e.target.value) }))}
+                                                    />
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Fat (g)"
+                                                        value={editForm.fat || ''}
+                                                        onChange={(e) => setEditForm(prev => ({ ...prev, fat: Number(e.target.value) }))}
                                                     />
                                                 </div>
-                                                <div className="space-y-3">
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        <Input
-                                                            type="number"
-                                                            value={editForm.kcal || ''}
-                                                            onChange={(e) => setEditForm(prev => ({ ...prev, kcal: Number(e.target.value) }))}
-                                                        />
-                                                        <Input
-                                                            type="number"
-                                                            value={editForm.protein || ''}
-                                                            onChange={(e) => setEditForm(prev => ({ ...prev, protein: Number(e.target.value) }))}
-                                                        />
-                                                        <Input
-                                                            type="number"
-                                                            value={editForm.carbs || ''}
-                                                            onChange={(e) => setEditForm(prev => ({ ...prev, carbs: Number(e.target.value) }))}
-                                                        />
-                                                        <Input
-                                                            type="number"
-                                                            value={editForm.fat || ''}
-                                                            onChange={(e) => setEditForm(prev => ({ ...prev, fat: Number(e.target.value) }))}
-                                                        />
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <Button onClick={handleSaveEdit} size="sm" className="flex-1">
-                                                            <Save className="h-4 w-4 mr-1" />
-                                                            Save
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => setEditingId(null)}
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
+                                                <div className="flex gap-2">
+                                                    <Button onClick={handleSaveEdit} size="sm" className="flex-1">
+                                                        <Save className="h-4 w-4 mr-1" />
+                                                        Save
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setEditingId(null)}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </div>
                                         ) : (
@@ -631,7 +451,7 @@ export function NutritionPage() {
                                                             {Number(entry.kcal).toFixed(0)} kcal
                                                         </span>
                                                     </div>
-                                                    <p className="text-foreground mb-2 ">{entry.description}</p>
+                                                    <p className="text-foreground mb-2">{entry.description}</p>
                                                     <div className="flex gap-4 text-sm text-muted-foreground">
                                                         <span>P: {Number(entry.protein).toFixed(1)}g</span>
                                                         <span>C: {Number(entry.carbs).toFixed(1)}g</span>
@@ -670,7 +490,6 @@ export function NutritionPage() {
                     )
                 })}
             </div>
-
         </div>
     )
 }

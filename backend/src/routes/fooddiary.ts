@@ -15,9 +15,6 @@ router.post('/', async (req, res) => {
         meal,
         recipe_id = null
     } = req.body;
-
-    console.log('Received log_date:', log_date, typeof log_date);
-
     try {
         await pool.query(
             `INSERT INTO food_diary (user_id, log_date, description, kcal, protein, carbs, fat, meal, recipe_id)
