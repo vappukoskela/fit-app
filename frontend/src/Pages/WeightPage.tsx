@@ -64,13 +64,10 @@ export function WeightPage() {
       if (!response.ok) {
         throw new Error('Failed to add weight')
       }
-
-      // Reset form
       setNewWeight('')
       setNewDate(new Date().toLocaleDateString('en-CA'))
       setIsAddingWeight(false)
 
-      // Refresh weights list
       await fetchWeights()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add weight')
