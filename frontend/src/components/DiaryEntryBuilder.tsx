@@ -33,6 +33,7 @@ export function DiaryEntryBuilder({
     const [description, setDescription] = useState<string>("")
 
     useEffect(() => {
+        console.log("Selected ingredient or recipe changed:", { selectedIngredient, selectedRecipe });
         if (selectedIngredient) {
             setDescription(selectedIngredient.name);
             setPortions("1");
@@ -45,7 +46,8 @@ export function DiaryEntryBuilder({
             setDescription(selectedRecipe.name);
             setPortions("1");
         }
-    }, [selectedIngredient, selectedRecipe]);
+    }, [selectedIngredient, selectedRecipe])
+
 
 
     const handlePortionsChange = (value: string) => {
@@ -59,8 +61,9 @@ export function DiaryEntryBuilder({
         const g = parseFloat(value) || 0;
         setPortions((g / baseGramsPerPortion).toFixed(1));
     };
-
     const nutrition = useMemo(() => {
+
+        console.log("Calculating nutrition with:", { portions, grams, selectedIngredient, selectedRecipe });
         if (selectedIngredient) {
             const gramsNum = parseFloat(grams) || 0
             const factor = gramsNum / 100
@@ -74,38 +77,25 @@ export function DiaryEntryBuilder({
         }
 
         if (selectedRecipe) {
-            const portionsNum = parseFloat(portions) || 0
-            const totals = selectedRecipe.ingredients?.reduce(
-                (acc, ri) => {
-                    const factor = ri.amount_g / 100
-                    return {
-                        kcal: acc.kcal + (ri.ingredient?.kcal_per_100g || 0) * factor,
-                        protein: acc.protein + (ri.ingredient?.protein_per_100g || 0) * factor,
-                        carbs: acc.carbs + (ri.ingredient?.carbs_per_100g || 0) * factor,
-                        fat: acc.fat + (ri.ingredient?.fat_per_100g || 0) * factor,
-                    }
-                },
-                { kcal: 0, protein: 0, carbs: 0, fat: 0 }
-            ) || { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+            const portionsNum = parseFloat(portions) || 1;
 
-            const perPortion = {
-                kcal: totals.kcal / selectedRecipe.servings,
-                protein: totals.protein / selectedRecipe.servings,
-                carbs: totals.carbs / selectedRecipe.servings,
-                fat: totals.fat / selectedRecipe.servings,
-            }
+            const kcal = selectedRecipe.kcal_per_portion ?? 0;
+            const protein = selectedRecipe.protein_per_portion ?? 0;
+            const carbs = selectedRecipe.carbs_per_portion ?? 0;
+            const fat = selectedRecipe.fat_per_portion ?? 0;
 
             return {
-                kcal: perPortion.kcal * portionsNum,
-                protein: perPortion.protein * portionsNum,
-                carbs: perPortion.carbs * portionsNum,
-                fat: perPortion.fat * portionsNum,
+                kcal: kcal * portionsNum,
+                protein: protein * portionsNum,
+                carbs: carbs * portionsNum,
+                fat: fat * portionsNum,
                 grams: null,
             }
         }
 
+
         return null
-    }, [grams, portions, selectedIngredient, selectedRecipe])
+    }, [portions, grams, selectedIngredient, selectedRecipe])
 
     const handleSave = async () => {
         console.log("Saving entry with:", { date, meal, description, grams, portions, nutrition, selectedIngredient, selectedRecipe });
@@ -150,28 +140,30 @@ export function DiaryEntryBuilder({
             </CardHeader>
 
             <CardContent>
-
-
-                <Label htmlFor='date' className="mb-2">Date</Label>
-                <Input
-                    id="date"
-                    type="date"
-                    className="mb-4"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                />
-                <div className='space-y-2'>
-                    <Label htmlFor="meal">Meal </Label>
-                    <Select value={meal} onValueChange={setMeal}>
-                        <SelectTrigger id="meal">
-                            <SelectValue placeholder="Select meal" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {MEAL_OPTIONS.map(m => (
-                                <SelectItem key={m} value={m}>{m}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div className='mb-4'>
+                    <div className="space-y-4">
+                        <Label htmlFor='date'>Date</Label>
+                        <Input
+                            id="date"
+                            type="date"
+                            className="mb-4"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-4">
+                        <Label htmlFor="meal">Meal </Label>
+                        <Select value={meal} onValueChange={setMeal}>
+                            <SelectTrigger id="meal">
+                                <SelectValue placeholder="Select meal" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {MEAL_OPTIONS.map(m => (
+                                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 {selectedIngredient && (
                     <>
@@ -202,7 +194,7 @@ export function DiaryEntryBuilder({
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 <Label htmlFor="grams">Grams</Label>
                                 <Input
                                     id="grams"
@@ -213,7 +205,7 @@ export function DiaryEntryBuilder({
                                     onChange={(e) => handleGramsChange(e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 <Label htmlFor="portions">Portions</Label>
                                 <Input
                                     id="portions"
@@ -274,7 +266,7 @@ export function DiaryEntryBuilder({
 
                 {selectedRecipe && (
                     <>
-                        <div className="mb-4">
+                        <div className="mb-4 space-y-4">
                             <h3 className="font-semibold text-lg">
                                 {selectedRecipe.name}
                             </h3>
@@ -284,21 +276,7 @@ export function DiaryEntryBuilder({
                         </div>
 
                         <div className="space-y-4 mb-4">
-                            <div>
-                                <Label htmlFor="meal-recipe">Meal *</Label>
-                                <Select value={meal} onValueChange={setMeal}>
-                                    <SelectTrigger id="meal-recipe">
-                                        <SelectValue placeholder="Select meal" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {MEAL_OPTIONS.map(m => (
-                                            <SelectItem key={m} value={m}>{m}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div>
+                            <div className="space-y-4">
                                 <Label htmlFor="description-recipe">Description</Label>
                                 <Textarea
                                     id="description-recipe"
@@ -309,7 +287,7 @@ export function DiaryEntryBuilder({
                                 />
                             </div>
 
-                            <div>
+                            <div className="space-y-4">
                                 <Label htmlFor="recipe-portions">Servings</Label>
                                 <Input
                                     id="recipe-portions"
