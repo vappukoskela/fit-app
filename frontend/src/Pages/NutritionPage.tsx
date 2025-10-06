@@ -2,17 +2,17 @@ import { useEffect, useReducer, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Edit2, Save, X, Trash2, Apple, ChefHat, Search } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Plus, Edit2, Save, X, Trash2, Copy, ChevronDown, ChevronUp, Apple, ChefHat, Search } from 'lucide-react'
 import { LoadingPage } from '@/components/Loading'
 import { DiaryEntryBuilder } from '@/components/DiaryEntryBuilder'
 import { nutritionReducer, initialNutritionState, type FoodEntry } from '../reducers/nutritionReducer'
 import { useRecipes } from '@/hooks/useRecipes'
 import { useIngredients } from '@/hooks/useIngredients'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
 import type { Ingredient, Recipe } from '@/types/recipeIngredientTypes'
 
-const MEAL_OPTIONS = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Other'];
+const MEAL_OPTIONS = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Other']
 
 function getLocalDateString(date: Date): string {
     return date.toLocaleDateString('en-CA')
@@ -94,7 +94,7 @@ export function NutritionPage() {
             await fetchData()
             dispatch({ type: 'CANCEL_EDIT' })
         } catch (err) {
-            dispatch({ type: 'FETCH_ERROR', payload: err instanceof Error ? err.message : 'Failed to update entry' })
+            dispatch({ type: 'FETCH_ERROR', payload: err instanceof Error ? err.message : 'Failed to save entry' })
         }
     }
 
@@ -104,8 +104,63 @@ export function NutritionPage() {
             const res = await fetch(`http://localhost:4000/api/diary/${id}`, { method: 'DELETE' })
             if (!res.ok) throw new Error()
             await fetchData()
-        } catch {
-            dispatch({ type: 'FETCH_ERROR', payload: 'Failed to delete entry' })
+        } catch (err) {
+            dispatch({ type: 'FETCH_ERROR', payload: err instanceof Error ? err.message : 'Failed to delete entry' })
+        }
+    }
+
+    const handleMoveEntry = async (entry: FoodEntry, direction: 'up' | 'down') => {
+        const currentDate = new Date(entry.log_date)
+        const newDate = new Date(currentDate)
+
+        if (direction === 'up') {
+            newDate.setDate(currentDate.getDate() + 1) // Move to next day
+        } else {
+            newDate.setDate(currentDate.getDate() - 1) // Move to previous day
+        }
+
+        const newDateString = getLocalDateString(newDate)
+
+        try {
+            const response = await fetch(`http://localhost:4000/api/diary/${entry.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...entry,
+                    log_date: newDateString
+                }),
+            })
+            if (!response.ok) throw new Error('Failed to move entry')
+            await fetchData()
+        } catch (err) {
+            dispatch({ type: 'FETCH_ERROR', payload: err instanceof Error ? err.message : 'Failed to move entry' })
+        }
+    }
+
+    const handleCopyToToday = async (entry: FoodEntry) => {
+        const today = getLocalDateString(new Date())
+
+        try {
+            const response = await fetch(`http://localhost:4000/api/diary`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: entry.user_id,
+                    log_date: today,
+                    meal: entry.meal,
+                    description: entry.description,
+                    portion_size: entry.portion_size,
+                    kcal: entry.kcal,
+                    protein: entry.protein,
+                    carbs: entry.carbs,
+                    fat: entry.fat,
+                    recipe_id: entry.recipe_id || null
+                }),
+            })
+            if (!response.ok) throw new Error('Failed to copy entry')
+            await fetchData()
+        } catch (err) {
+            dispatch({ type: 'FETCH_ERROR', payload: err instanceof Error ? err.message : 'Failed to copy entry' })
         }
     }
 
@@ -320,7 +375,6 @@ export function NutritionPage() {
                                     <CardContent className="p-4">
                                         {state.editingEntry?.id === entry.id ? (
                                             <div className="space-y-3">
-
                                                 <div className="text-sm font-medium text-muted-foreground">
                                                     Edit Entry
                                                 </div>
@@ -346,7 +400,7 @@ export function NutritionPage() {
                                                     </div>
                                                     <div>
                                                         <Label htmlFor="edit-grams" className="text-xs text-muted-foreground mb-1">
-                                                            Multiplier (placeholder for grams)
+                                                            Portion
                                                         </Label>
                                                         <Input
                                                             id="edit-grams"
@@ -382,7 +436,7 @@ export function NutritionPage() {
                                                             type="number"
                                                             step="0.1"
                                                             placeholder="Calories"
-                                                            value={state.editingEntry.form.kcal ? state.editingEntry.form.kcal.toFixed(0) : ""}
+                                                            value={state.editingEntry.form.kcal?.toFixed(1) || ''}
                                                             onChange={(e) => dispatch({
                                                                 type: 'UPDATE_EDIT_FORM',
                                                                 payload: { kcal: parseFloat(e.target.value) || 0 }
@@ -392,7 +446,7 @@ export function NutritionPage() {
                                                             type="number"
                                                             step="0.1"
                                                             placeholder="Protein (g)"
-                                                            value={state.editingEntry.form.protein ? state.editingEntry.form.protein.toFixed(1) : ''}
+                                                            value={state.editingEntry.form.protein?.toFixed(1) || ''}
                                                             onChange={(e) => dispatch({
                                                                 type: 'UPDATE_EDIT_FORM',
                                                                 payload: { protein: parseFloat(e.target.value) || 0 }
@@ -402,7 +456,7 @@ export function NutritionPage() {
                                                             type="number"
                                                             step="0.1"
                                                             placeholder="Carbs (g)"
-                                                            value={state.editingEntry.form.carbs ? state.editingEntry.form.carbs.toFixed(1) : ''}
+                                                            value={state.editingEntry.form.carbs?.toFixed(1) || ''}
                                                             onChange={(e) => dispatch({
                                                                 type: 'UPDATE_EDIT_FORM',
                                                                 payload: { carbs: parseFloat(e.target.value) || 0 }
@@ -412,7 +466,7 @@ export function NutritionPage() {
                                                             type="number"
                                                             step="0.1"
                                                             placeholder="Fat (g)"
-                                                            value={state.editingEntry.form.fat ? state.editingEntry.form.fat.toFixed(1) : ''}
+                                                            value={state.editingEntry.form.fat?.toFixed(1) || ''}
                                                             onChange={(e) => dispatch({
                                                                 type: 'UPDATE_EDIT_FORM',
                                                                 payload: { fat: parseFloat(e.target.value) || 0 }
@@ -452,13 +506,26 @@ export function NutritionPage() {
                                                         <span>C: {Number(entry.carbs).toFixed(1)}g</span>
                                                         <span>F: {Number(entry.fat).toFixed(1)}g</span>
                                                     </div>
-                                                </div>
-                                                <div className="flex items-start gap-2">
-                                                    <div className="text-right text-xs text-muted-foreground mb-2">
+
+                                                    {/* TODO Do we want this */}
+                                                    {/* <div className="text-right text-xs text-muted-foreground mb-2">
                                                         <div>Logged</div>
                                                         <div>{new Date(entry.created_at).toLocaleString()}</div>
-                                                    </div>
+                                                    </div> */}
+                                                </div>
+                                                <div className="flex items-start gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleDelete(entry.id)}
+                                                        className="text-destructive hover:text-destructive"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                                <div className="flex items-start gap-2">
                                                     <div className="flex flex-col gap-1">
+
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
@@ -466,14 +533,37 @@ export function NutritionPage() {
                                                         >
                                                             <Edit2 className="h-4 w-4" />
                                                         </Button>
+
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start gap-2">
+
+                                                    <div className="flex flex-col gap-1">
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            onClick={() => handleDelete(entry.id)}
-                                                            className="text-destructive hover:text-destructive"
+                                                            onClick={() => handleMoveEntry(entry, 'up')}
+                                                            title="Move to next day"
                                                         >
-                                                            <Trash2 className="h-4 w-4" />
+                                                            <ChevronUp className="h-4 w-4" />
                                                         </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleMoveEntry(entry, 'down')}
+                                                            title="Move to previous day"
+                                                        >
+                                                            <ChevronDown className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleCopyToToday(entry)}
+                                                            title="Copy to today"
+                                                        >
+                                                            <Copy className="h-4 w-4" />
+                                                        </Button>
+
                                                     </div>
                                                 </div>
                                             </div>
