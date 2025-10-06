@@ -44,7 +44,7 @@ function parseNutritionText(input: string) {
 
     return {
         kcal: findValue([/\b(\d+(?:\.\d+)?)\s*(?:kcal|cal)\b/, /\bcalories[^0-9]*(\d+(?:\.\d+)?)/,]),
-        protein: findValue([/\bp\s*([0-9]+(?:\.\d+)?)/, /\bprotein[^0-9]*(\d+(?:\.\d+)?)/,]),
+        protein: findValue([/\bp\s*([0-9]+(?:\.\d+)?)/, /\bprotein[^0-9]*(\d+(?:\.\d+)?)/,/\bproteiini[^0-9]*(\d+(?:\.\d+)?)/,]),
         carbs: findValue([/\bc\s*([0-9]+(?:\.\d+)?)/, /\bcarb(?:s|ohydrates)?[^0-9]*(\d+(?:\.\d+)?)/, /\bhiilihydraat\w*[^0-9]*(\d+(?:\.\d+)?)/,]),
         fat: findValue([/\bf\s*([0-9]+(?:\.\d+)?)/, /\bfat[^0-9]*(\d+(?:\.\d+)?)/, /\brasva\w*[^0-9]*(\d+(?:\.\d+)?)/,]),
     };
