@@ -81,8 +81,6 @@ router.put('/:id', async (req, res) => {
         recipe_id = null
     } = req.body;
 
-    console.log('Updating with log_date:', log_date, typeof log_date);
-
     try {
         await pool.query(
             `UPDATE food_diary
