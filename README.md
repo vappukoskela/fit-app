@@ -1,7 +1,28 @@
 # My Fitness Buddy
 
-Personal project for personal use. 
-This is an app with an AI integration to help user stay on track with their fitness journey. Combining my favourite features from various fitness software to create one all-round helper with a fun interface.
+Minimal instructions to install and run (frontend + backend).
 
-Polar access
-https://admin.polaraccesslink.com/
+## Prerequisites
+- Node.js 18+ and npm
+- PostgreSQL (or set DATABASE_URL)
+- API keys as needed (POLAR credentials https://admin.polaraccesslink.com/)
+
+## Backend (API)
+1. cd backend
+2. npm install
+3. Copy and fill environment variables:
+   - create `.env` with at least: DATABASE_URL,
+4. Run (dev): `npm run dev`
+   - Production: `npm run build` then `npm start`
+   - Default dev server: http://localhost:3000 (check src/index.ts)
+
+## Frontend (UI)
+1. cd frontend
+2. npm install
+3. Run (dev): `npm run dev`
+   - Vite dev server usually at: http://localhost:5173
+   - Production: `npm run build` then `npm run preview`
+
+## Notes
+- Ensure backend and frontend ports match any configured proxy or API base URL.
+- If using PostgreSQL, create the DB and set DATABASE_URL before starting backend.
